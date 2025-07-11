@@ -27,29 +27,32 @@ const TeacherIDCard = () => {
     const user = userRaw ? JSON.parse(userRaw) : null;
     const schools = user?.user?.schools || user?.schools || [];
     const schoolId = schools[0]?.id || null;
-    const schoolNameFromUser = schools[0]?.Schoolname || schools[0]?.schoolName || "";
+    const schoolNameFromUser =
+      schools[0]?.Schoolname || schools[0]?.schoolName || "";
     setSchoolId(schoolId);
     setSchoolName(schoolNameFromUser);
   }, []);
 
-     useEffect(() => {
-        // Set default zoom to 80% for this page
-        const prevZoom = document.body.style.zoom;
-        document.body.style.zoom = "85%";
-        return () => {
-          document.body.style.zoom = prevZoom || "";
-        };
-      }, []);
+  useEffect(() => {
+    // Set default zoom to 80% for this page
+    const prevZoom = document.body.style.zoom;
+    document.body.style.zoom = "85%";
+    return () => {
+      document.body.style.zoom = prevZoom || "";
+    };
+  }, []);
 
   useEffect(() => {
     if (!schoolId) return;
     const fetchTeachers = async () => {
       try {
         const response = await axios.get(
-          `https://api.jsic.in/api/teacher/teachers/by-school/${schoolId}`,
+          `http://localhost:5002/api/teacher/teachers/by-school/${schoolId}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
+              Authorization: `Bearer ${localStorage.getItem(
+                "principal_token"
+              )}`,
             },
           }
         );
@@ -68,7 +71,7 @@ const TeacherIDCard = () => {
     const fetchAssets = async () => {
       try {
         const res = await fetch(
-          `https://api.jsic.in/api/newSchool/school-assets/by-school/${schoolId}`
+          `http://localhost:5002/api/newSchool/school-assets/by-school/${schoolId}`
         );
         const data = await res.json();
         // School Logo
@@ -80,7 +83,7 @@ const TeacherIDCard = () => {
           setPrincipalSignature(data.principalSignature);
         }
       } catch (error) {
-        console.error('Error fetching assets:', error);
+        console.error("Error fetching assets:", error);
         setSchoolLogo(null);
         setPrincipalSignature(null);
       }
@@ -120,24 +123,26 @@ const TeacherIDCard = () => {
     if (!cardElement) return;
 
     // Wait for images to load
-    const images = cardElement.getElementsByTagName('img');
-    await Promise.all(Array.from(images).map(img => {
-      if (img.complete) return Promise.resolve();
-      return new Promise(resolve => {
-        img.onload = resolve;
-        img.onerror = resolve;
-      });
-    }));
+    const images = cardElement.getElementsByTagName("img");
+    await Promise.all(
+      Array.from(images).map((img) => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+        });
+      })
+    );
 
     // Additional delay to ensure everything is rendered
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const canvas = await html2canvas(cardElement, {
       useCORS: true,
       allowTaint: true,
       scale: 2,
       logging: true,
-      backgroundColor: '#ffffff'
+      backgroundColor: "#ffffff",
     });
 
     const link = document.createElement("a");
@@ -183,8 +188,8 @@ const TeacherIDCard = () => {
                           className="w-full h-full object-cover"
                           crossOrigin="anonymous"
                           onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'flex';
+                            e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "flex";
                           }}
                         />
                       ) : (
@@ -216,11 +221,13 @@ const TeacherIDCard = () => {
                               formData.append("photo", file);
                               try {
                                 const res = await fetch(
-                                  `https://api.jsic.in/api/teacher/teacher/${teacher.id}/photo`,
+                                  `http://localhost:5002/api/teacher/teacher/${teacher.id}/photo`,
                                   {
                                     method: "POST",
                                     headers: {
-                                      Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
+                                      Authorization: `Bearer ${localStorage.getItem(
+                                        "principal_token"
+                                      )}`,
                                     },
                                     body: formData,
                                   }
@@ -229,7 +236,9 @@ const TeacherIDCard = () => {
                                 if (data.success) {
                                   setTeachers((prev) =>
                                     prev.map((t) =>
-                                      t.id === teacher.id ? { ...t, photo: data.photoUrl } : t
+                                      t.id === teacher.id
+                                        ? { ...t, photo: data.photoUrl }
+                                        : t
                                     )
                                   );
                                   alert("Photo uploaded!");
@@ -261,14 +270,19 @@ const TeacherIDCard = () => {
                             className="text-xs text-red-600 underline cursor-pointer"
                             title="Delete Photo"
                             onClick={async () => {
-                              if (!window.confirm("Delete this teacher's photo?")) return;
+                              if (
+                                !window.confirm("Delete this teacher's photo?")
+                              )
+                                return;
                               try {
                                 const res = await fetch(
-                                  `https://api.jsic.in/api/teacher/teacher/${teacher.id}/photo`,
+                                  `http://localhost:5002/api/teacher/teacher/${teacher.id}/photo`,
                                   {
                                     method: "DELETE",
                                     headers: {
-                                      Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
+                                      Authorization: `Bearer ${localStorage.getItem(
+                                        "principal_token"
+                                      )}`,
                                     },
                                   }
                                 );
@@ -276,7 +290,9 @@ const TeacherIDCard = () => {
                                 if (data.success) {
                                   setTeachers((prev) =>
                                     prev.map((t) =>
-                                      t.id === teacher.id ? { ...t, photo: null } : t
+                                      t.id === teacher.id
+                                        ? { ...t, photo: null }
+                                        : t
                                     )
                                   );
                                   alert("Photo deleted!");
@@ -338,14 +354,19 @@ const TeacherIDCard = () => {
                     className="w-10 h-10 object-contain"
                     crossOrigin="anonymous"
                     loading="eager"
-                    onError={e => { e.target.onerror = null; e.target.src = "/no-photo.png"; }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/no-photo.png";
+                    }}
                   />
                 </div>
                 <div className="flex-1">
                   <h1 className="text-white text-2xl font-bold">
                     {schoolName || "SCHOOL NAME"}
                   </h1>
-                  <div className="text-emerald-100 text-sm">TEACHER ID CARD</div>
+                  <div className="text-emerald-100 text-sm">
+                    TEACHER ID CARD
+                  </div>
                 </div>
                 <div className="bg-white px-3 py-1 rounded">
                   <span className="text-sm text-emerald-700">
@@ -361,8 +382,20 @@ const TeacherIDCard = () => {
                   <InfoRow label="SUBJECT" value={selectedTeacher.subjects} />
                   <InfoRow label="EMAIL" value={selectedTeacher.email} />
                   <InfoRow label="PHONE" value={selectedTeacher.phone} />
-                  <InfoRow label="JOINED" value={selectedTeacher.joiningDate ? new Date(selectedTeacher.joiningDate).toLocaleDateString() : "N/A"} />
-                  <InfoRow label="ADDRESS" value={selectedTeacher.address || "N/A"} />
+                  <InfoRow
+                    label="JOINED"
+                    value={
+                      selectedTeacher.joiningDate
+                        ? new Date(
+                            selectedTeacher.joiningDate
+                          ).toLocaleDateString()
+                        : "N/A"
+                    }
+                  />
+                  <InfoRow
+                    label="ADDRESS"
+                    value={selectedTeacher.address || "N/A"}
+                  />
                 </div>
                 <div className="w-32">
                   <div className="w-full h-40 bg-gray-200 border-2 border-emerald-700 flex items-center justify-center overflow-hidden">
@@ -372,7 +405,10 @@ const TeacherIDCard = () => {
                       className="w-full h-full object-cover"
                       crossOrigin="anonymous"
                       loading="eager"
-                      onError={e => { e.target.onerror = null; e.target.src = "/no-photo.png"; }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/no-photo.png";
+                      }}
                     />
                   </div>
                 </div>
@@ -390,7 +426,10 @@ const TeacherIDCard = () => {
                       style={{ maxWidth: "100px", maxHeight: "40px" }}
                       crossOrigin="anonymous"
                       loading="eager"
-                      onError={e => { e.target.onerror = null; e.target.src = "/no-photo.png"; }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/no-photo.png";
+                      }}
                     />
                   )}
                   <div className="text-sm font-semibold text-emerald-700 mt-1">

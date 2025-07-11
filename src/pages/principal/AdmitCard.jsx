@@ -53,26 +53,27 @@ const AdmitCard = () => {
       try {
         // Fetch admissions data
         const admissionsResponse = await axios.get(
-          "https://api.jsic.in/api/admission/students"
+          "http://localhost:5002/api/admission/students"
         );
         setAdmissions(admissionsResponse.data.students || []);
 
         // Fetch subjects configuration from backend
         const subjectsResponse = await axios.get(
-          "https://api.jsic.in/api/newSchool/schools/"
+          "http://localhost:5002/api/newSchool/schools/"
         );
-        
+
         // Add safe parsing with error handling
         if (subjectsResponse.data?.[0]?.subjects) {
           try {
             // Check if subjects is already an object
-            const subjectsData = typeof subjectsResponse.data[0].subjects === 'string' 
-              ? JSON.parse(subjectsResponse.data[0].subjects)
-              : subjectsResponse.data[0].subjects;
-            
+            const subjectsData =
+              typeof subjectsResponse.data[0].subjects === "string"
+                ? JSON.parse(subjectsResponse.data[0].subjects)
+                : subjectsResponse.data[0].subjects;
+
             setSubjectConfigs(subjectsData);
           } catch (parseError) {
-            console.error('Error parsing subjects data:', parseError);
+            console.error("Error parsing subjects data:", parseError);
             setSubjectConfigs({});
           }
         }
@@ -184,30 +185,33 @@ const AdmitCard = () => {
         // Show loading state
         setLoading(true);
 
-        const response = await axios.post('http://localhost:5000/api/admitcard/exam-schedule', {
-          class: scheduleFormData.class,
-          section: scheduleFormData.section,
-          examType: scheduleFormData.examType,
-          examDates: scheduleFormData.examDates,
-          examTimes: scheduleFormData.examTimes
-        });
+        const response = await axios.post(
+          "http://localhost:5000/api/admitcard/exam-schedule",
+          {
+            class: scheduleFormData.class,
+            section: scheduleFormData.section,
+            examType: scheduleFormData.examType,
+            examDates: scheduleFormData.examDates,
+            examTimes: scheduleFormData.examTimes,
+          }
+        );
 
         if (response.data) {
-          alert('Exam schedule saved successfully!');
-          setActiveView('list');
-          
+          alert("Exam schedule saved successfully!");
+          setActiveView("list");
+
           // Reset form
           setScheduleFormData({
-            class: '',
-            section: '',
-            examType: '',
+            class: "",
+            section: "",
+            examType: "",
             examDates: {},
-            examTimes: {}
+            examTimes: {},
           });
         }
       } catch (error) {
-        console.error('Error saving exam schedule:', error);
-        alert('Failed to save exam schedule. Please try again.');
+        console.error("Error saving exam schedule:", error);
+        alert("Failed to save exam schedule. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -585,9 +589,24 @@ const AdmitCard = () => {
                 >
                   {loading ? (
                     <span className="inline-flex items-center gap-2">
-                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      <svg
+                        className="animate-spin h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
                       </svg>
                       Saving...
                     </span>

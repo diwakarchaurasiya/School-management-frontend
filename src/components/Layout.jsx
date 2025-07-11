@@ -11,7 +11,7 @@ const Layout = ({ children }) => {
   const userType = location.pathname.split("/")[1];
 
   return (
-    <div className="flex full-height">
+    <div className="flex h-full">
       {/* Sidebar */}
       <Sidebar
         isExpanded={isExpanded}

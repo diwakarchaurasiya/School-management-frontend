@@ -13,7 +13,7 @@ const ShowNotice = () => {
     const fetchNotices = async () => {
       try {
         const response = await axios.get(
-          "https://api.jsic.in/api/notices/notices"
+          "http://localhost:5002/api/notices/notices"
         );
         if (response.data.success) {
           setNotices(response.data.notices.slice(0, 5));

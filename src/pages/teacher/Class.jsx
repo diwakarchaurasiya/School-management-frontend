@@ -27,14 +27,29 @@ const MyClassStudents = () => {
   const [classFilter, setClassFilter] = useState("all");
   const [sectionFilter, setSectionFilter] = useState("A");
 
-  const CLASS_OPTIONS = ["LKG", "UKG", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+  const CLASS_OPTIONS = [
+    "LKG",
+    "UKG",
+    "I",
+    "II",
+    "III",
+    "IV",
+    "V",
+    "VI",
+    "VII",
+    "VIII",
+    "IX",
+    "X",
+    "XI",
+    "XII",
+  ];
   const SECTION_OPTIONS = ["A", "B", "C", "D"];
 
   useEffect(() => {
     const fetchAdmissions = async () => {
       try {
         const response = await axios.get(
-          "https://api.jsic.in/api/admission/students"
+          "http://localhost:5002/api/admission/students"
         );
         // Check if response.data.students exists, otherwise use response.data
         const studentsData = response.data.students || response.data || [];
@@ -106,9 +121,7 @@ const MyClassStudents = () => {
 
     // Apply class filter
     if (classFilter !== "all") {
-      filtered = filtered.filter(
-        (student) => student.class_ === classFilter
-      );
+      filtered = filtered.filter((student) => student.class_ === classFilter);
     }
 
     // Apply section filter
@@ -173,7 +186,7 @@ const MyClassStudents = () => {
                   <option value="rejected">Rejected</option>
                 </select>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <select
                   value={classFilter}

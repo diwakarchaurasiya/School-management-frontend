@@ -81,18 +81,18 @@ const FeeManagementSystem = () => {
       fetchAllFeeData(schoolId);
     }
   }, []);
-   useEffect(() => {
-      // Set default zoom to 80% for this page
-      const prevZoom = document.body.style.zoom;
-      document.body.style.zoom = "70%";
-      return () => {
-        document.body.style.zoom = prevZoom || "";
-      };
-    }, []);
+  useEffect(() => {
+    // Set default zoom to 80% for this page
+    const prevZoom = document.body.style.zoom;
+    document.body.style.zoom = "70%";
+    return () => {
+      document.body.style.zoom = prevZoom || "";
+    };
+  }, []);
   useEffect(() => {
     if (!schoolId) return;
     fetch(
-      `https://api.jsic.in/api/newSchool/school-assets/by-school/${schoolId}`
+      `http://localhost:5002/api/newSchool/school-assets/by-school/${schoolId}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -114,7 +114,7 @@ const FeeManagementSystem = () => {
   const fetchClasses = async (schoolId) => {
     try {
       const response = await fetch(
-        `https://api.jsic.in/api/classes/${schoolId}`,
+        `http://localhost:5002/api/classes/${schoolId}`,
         getAuthHeaders()
       );
       const data = await response.json();
@@ -130,7 +130,7 @@ const FeeManagementSystem = () => {
   const fetchStudents = async (schoolId) => {
     try {
       const response = await fetch(
-        `https://api.jsic.in/api/admission/students/by-school/${schoolId}`,
+        `http://localhost:5002/api/admission/students/by-school/${schoolId}`,
         getAuthHeaders()
       );
       const data = await response.json();
@@ -149,15 +149,15 @@ const FeeManagementSystem = () => {
       const [feeManagementRes, feeCollectionRes, schoolFeeRes] =
         await Promise.all([
           fetch(
-            `https://api.jsic.in/api/fees/feemanagement?schoolId=${schoolId}`,
+            `http://localhost:5002/api/fees/feemanagement?schoolId=${schoolId}`,
             getAuthHeaders()
           ),
           fetch(
-            `https://api.jsic.in/api/fees/feecollection?schoolId=${schoolId}`,
+            `http://localhost:5002/api/fees/feecollection?schoolId=${schoolId}`,
             getAuthHeaders()
           ),
           fetch(
-            `https://api.jsic.in/api/fees/schoolfee?schoolId=${schoolId}`,
+            `http://localhost:5002/api/fees/schoolfee?schoolId=${schoolId}`,
             getAuthHeaders()
           ),
         ]);
@@ -241,7 +241,7 @@ const FeeManagementSystem = () => {
         if (Array.isArray(parsed)) feeTypeArr = parsed;
         else feeTypeArr = [feeTypeArr];
       } catch {
-        feeTypeArr = feeTypeArr.split(',').map((v) => v.trim());
+        feeTypeArr = feeTypeArr.split(",").map((v) => v.trim());
       }
     } else if (!Array.isArray(feeTypeArr)) {
       feeTypeArr = feeTypeArr ? [feeTypeArr] : [];
@@ -256,9 +256,15 @@ const FeeManagementSystem = () => {
         ) === JSON.stringify(feeTypeArr.sort())
     );
 
-    let total = matchRecord ? parseFloat(matchRecord.amount) : parseFloat(item.amount) || 0;
-    let paid = matchRecord ? parseFloat(matchRecord.paidAmount) : parseFloat(item.pendingAmount) || 0;
-    let pending = matchRecord ? parseFloat(matchRecord.pendingAmount) : Math.max(total - paid, 0);
+    let total = matchRecord
+      ? parseFloat(matchRecord.amount)
+      : parseFloat(item.amount) || 0;
+    let paid = matchRecord
+      ? parseFloat(matchRecord.paidAmount)
+      : parseFloat(item.pendingAmount) || 0;
+    let pending = matchRecord
+      ? parseFloat(matchRecord.pendingAmount)
+      : Math.max(total - paid, 0);
     if (isNaN(total)) total = 0;
 
     setFormData({
@@ -267,7 +273,7 @@ const FeeManagementSystem = () => {
       amount: total, // Total amount is sum of paid and pending
       paidAmount: parseFloat(item.pendingAmount), // Paid amount is the sum of paid and pending
       pendingAmount: paid,
-      priviosPaidAmount: pending  // Store previous paid amount for comparison
+      priviosPaidAmount: pending, // Store previous paid amount for comparison
     });
     setShowModal(true);
   };
@@ -290,7 +296,7 @@ const FeeManagementSystem = () => {
               toast.dismiss();
               try {
                 const response = await fetch(
-                  `https://api.jsic.in/api/fees/${activeTab}/${id}`,
+                  `http://localhost:5002/api/fees/${activeTab}/${id}`,
                   {
                     method: "DELETE",
                     ...getAuthHeaders(),
@@ -320,7 +326,12 @@ const FeeManagementSystem = () => {
           </button>
         </div>
       </div>,
-      { autoClose: false, closeOnClick: false, draggable: false, position: 'top-center' }
+      {
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        position: "top-center",
+      }
     );
   };
 
@@ -347,8 +358,8 @@ const FeeManagementSystem = () => {
     try {
       const url =
         modalType === "create"
-          ? `https://api.jsic.in/api/fees/${activeTab}`
-          : `https://api.jsic.in/api/fees/${activeTab}/${selectedItem.id}`;
+          ? `http://localhost:5002/api/fees/${activeTab}`
+          : `http://localhost:5002/api/fees/${activeTab}/${selectedItem.id}`;
 
       const method = modalType === "create" ? "POST" : "PUT";
 
@@ -362,9 +373,9 @@ const FeeManagementSystem = () => {
         fetchAllFeeData(schoolId);
         setShowModal(false);
         toast.success(
-          `Record ${modalType === "create" ? "created" : "updated"
+          `Record ${
+            modalType === "create" ? "created" : "updated"
           } successfully!`
-
         );
 
         if (activeTab === "feecollection" && modalType === "create") {
@@ -443,10 +454,11 @@ const FeeManagementSystem = () => {
   const TabButton = ({ tabKey, label, icon: Icon }) => (
     <button
       onClick={() => setActiveTab(tabKey)}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === tabKey
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+        activeTab === tabKey
           ? "bg-blue-600 text-white"
           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-        }`}
+      }`}
     >
       <Icon size={18} />
       {label}
@@ -533,10 +545,25 @@ const FeeManagementSystem = () => {
             ],
           },
           { name: "paidDate", label: "Payment Date", type: "date" },
-          { name: "amount", label: "Total Amount", type: "number", readOnly: true },
-          { name: "pendingAmount", label: "Pending Amount", type: "number", readOnly: true },
-          {name: "paidAmount", label: "Paid Amount", type: "number"},
-          {name: "priviosPaidAmount", label: "Previous Paid Amount", type: "number", readOnly: true}, // Show previous paid amount in fee collection
+          {
+            name: "amount",
+            label: "Total Amount",
+            type: "number",
+            readOnly: true,
+          },
+          {
+            name: "pendingAmount",
+            label: "Pending Amount",
+            type: "number",
+            readOnly: true,
+          },
+          { name: "paidAmount", label: "Paid Amount", type: "number" },
+          {
+            name: "priviosPaidAmount",
+            label: "Previous Paid Amount",
+            type: "number",
+            readOnly: true,
+          }, // Show previous paid amount in fee collection
           { name: "description", label: "Description", type: "textarea" },
         ];
       case "schoolfee":
@@ -679,10 +706,7 @@ const FeeManagementSystem = () => {
           selectValue = selectValue[0] || "";
         }
         return (
-          <select
-            {...commonProps}
-            value={selectValue}
-          >
+          <select {...commonProps} value={selectValue}>
             <option value="">Select {field.label}</option>
             {field.options?.map((option) => (
               <option key={option.value} value={option.value}>
@@ -804,15 +828,12 @@ const FeeManagementSystem = () => {
         );
       case "feecollection":
         return (
-          
           <tr key={item.id} className="hover:bg-gray-50">
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               {index + 1} {/* Assuming srNo is an object with index */}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {student
-                ? `${student.studentName}` 
-                : "Unknown Student"}
+              {student ? `${student.studentName}` : "Unknown Student"}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               {student ? student.Admission_Number : "N/A"}
@@ -840,7 +861,7 @@ const FeeManagementSystem = () => {
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               ₹{item.pendingAmount}
             </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               ₹{Math.max(item.amount - item.pendingAmount, 0)}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -1069,14 +1090,13 @@ const FeeManagementSystem = () => {
     let matchesClass = true;
     if (activeTab === "feecollection" && filterClass) {
       const student = students.find((s) => s.id === item.studentId);
-      const classNames = [
-        item.className,
-        student?.class_,
-        student?.class
-      ].filter(Boolean).map((c) => c.toString().toLowerCase());
+      const classNames = [item.className, student?.class_, student?.class]
+        .filter(Boolean)
+        .map((c) => c.toString().toLowerCase());
       matchesClass = classNames.includes(filterClass.toLowerCase());
     } else if (filterClass) {
-      matchesClass = item.className?.toString().toLowerCase() === filterClass.toLowerCase();
+      matchesClass =
+        item.className?.toString().toLowerCase() === filterClass.toLowerCase();
     }
     // Date range filter
     if (!dateRange.from && !dateRange.to) return matchesClass;
@@ -1110,7 +1130,7 @@ const FeeManagementSystem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-0">
+    <div className=" bg-gray-50 p-0 min-h-screen">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -1266,7 +1286,11 @@ const FeeManagementSystem = () => {
                 <button
                   onClick={() => {
                     if (summaryTableRef.current) {
-                      const printWindow = window.open("", "", "height=600,width=1000");
+                      const printWindow = window.open(
+                        "",
+                        "",
+                        "height=600,width=1000"
+                      );
                       printWindow.document.write(`
       <html>
         <head>
@@ -1288,10 +1312,10 @@ const FeeManagementSystem = () => {
         </body>
       </html>
     `);
-    printWindow.document.close();
-    printWindow.print();
-  }
-}}
+                      printWindow.document.close();
+                      printWindow.print();
+                    }
+                  }}
                   className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 flex items-center gap-2"
                   title="Print Table"
                 >
@@ -1308,8 +1332,8 @@ const FeeManagementSystem = () => {
           )}
 
           {/* Data Table  */}
-          {activeTab !== "feecollection" && (
-            loading ? (
+          {activeTab !== "feecollection" &&
+            (loading ? (
               <div className="text-center py-8">Loading data...</div>
             ) : (
               <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
@@ -1329,7 +1353,9 @@ const FeeManagementSystem = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredData.length > 0 ? (
-                      filteredData.map((item, index) => renderTableRow(item, index))
+                      filteredData.map((item, index) =>
+                        renderTableRow(item, index)
+                      )
                     ) : (
                       <tr>
                         <td
@@ -1343,8 +1369,7 @@ const FeeManagementSystem = () => {
                   </tbody>
                 </table>
               </div>
-            )
-          )}
+            ))}
         </div>
 
         {/* Summary Table for Fee Collection (ref for PDF export) */}
@@ -1400,7 +1425,12 @@ const FeeManagementSystem = () => {
                       ₹
                       {filteredFeeCollection.reduce(
                         (sum, item) =>
-                          sum + Math.max(Number(item.amount || 0) - Number(item.pendingAmount || 0), 0),
+                          sum +
+                          Math.max(
+                            Number(item.amount || 0) -
+                              Number(item.pendingAmount || 0),
+                            0
+                          ),
                         0
                       )}
                     </td>
@@ -1473,8 +1503,6 @@ const FeeManagementSystem = () => {
                     Add New Fee
                   </label>
                 </div>
-
-
               )}
               {getFormFields().map((field) => (
                 <div className="col-span-1" key={field.name}>
@@ -1568,126 +1596,132 @@ const FeeManagementSystem = () => {
             </div>
             <div className="p-6" ref={printReceiptRef}>
               {/* Receipt Content */}
-                <div className="header text-center mb-6">
-                  {schoolLogo && (
-                    <img
-                      src={getImageUrl(schoolLogo)}
-                      alt="School Logo"
-                      className="h-20 mx-auto mb-2"
-                      crossOrigin="anonymous"
-                      onError={(e) => (e.target.src = "/no-photo.png")}
-                    />
-                  )}
-                  <h2 className="text-3xl font-bold text-gray-900">
-                    {schoolName}
-                  </h2>
-                  <p className="text-gray-600 text-sm">Fee Receipt</p>
-                </div>
-
-                <div className="details mb-6 text-gray-700">
-                  <p>
-                    <strong>Receipt No:</strong> {printData.receiptNumber}
-                  </p>
-                  <p>
-                    <strong>Date:</strong>{" "}
-                    {new Date(printData.paidDate).toLocaleDateString()}
-                  </p>
-                  <p>
-                    <strong>Student Name:</strong>{" "}
-                    {
-                      students.find((s) => s.id === printData.studentId)
-                        ?.studentName
-                    }
-                  </p>
-                  <p>
-                    <strong>Admission No:</strong>{" "}
-                    {
-                      students.find((s) => s.id === printData.studentId)
-                        ?.Admission_Number
-                    }
-                  </p>
-                  <p>
-                    <strong>Class:</strong> {(() => {
-                      // Prefer printData.class, else get from student object
-                      if (printData.class) return printData.class;
-                      const student = students.find((s) => s.id === printData.studentId);
-                      return student?.class_ || student?.class || "";
-                    })()}
-                  </p>
-                  <p>
-                    <strong>Section:</strong> {(() => {
-                      // Prefer printData.class, else get from student object
-                      if (printData.class) return printData.class;
-                      const student = students.find((s) => s.id === printData.studentId);
-                      return student?.sectionclass || student?.sectionclass || "";
-                    })()}
-                  </p>
-                </div>
-
-                <table className="fee-table w-full text-left border-collapse mb-6">
-                  <thead>
-                    <tr>
-                      <th className="py-2 px-4 border border-gray-300 bg-gray-100">
-                        Fee Type
-                      </th>
-                      <th className="py-2 px-4 border border-gray-300 bg-gray-100">
-                        Amount
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="py-2 px-4 border border-gray-300">
-                        {Array.isArray(printData.feeType)
-                          ? printData.feeType.join(", ")
-                          : printData.feeType}
-                      </td>
-                      <td className="py-2 px-4 border border-gray-300">
-                        ₹{printData.amount}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <div className="total text-right text-gray-900 mb-6">
-                  Total Paid: ₹{printData.amount}
-                </div>
-
-                <div className="payment-method text-gray-700 mb-6">
-                  <p>
-                    <strong>Payment Method:</strong> {printData.paymentMode}
-                  </p>
-                      <p>
-                    <strong>Pending Amount:</strong> {printData.pendingAmount||0}
-                  </p>
-                  {printData.description && (
-                    <p>
-                      <strong>Description:</strong> {printData.description}
-                    </p>
-                  )}
-                </div>
-
-                <div className="signature text-right mt-8">
-                  {principalSignature && (
-                    <img
-                      src={getImageUrl(principalSignature)}
-                      alt="Principal Signature"
-                      className="h-16 mx-auto mb-2"
-                      crossOrigin="anonymous"
-                      onError={(e) => (e.target.src = "/no-photo.png")}
-                    />
-                  )}
-                  <p className="font-semibold text-gray-800">
-                    Principal Signature
-                  </p>
-                </div>
-
-                <div className="footer text-center text-xs text-gray-500 mt-8">
-                  Thank you for your payment.
-                </div>
-                
+              <div className="header text-center mb-6">
+                {schoolLogo && (
+                  <img
+                    src={getImageUrl(schoolLogo)}
+                    alt="School Logo"
+                    className="h-20 mx-auto mb-2"
+                    crossOrigin="anonymous"
+                    onError={(e) => (e.target.src = "/no-photo.png")}
+                  />
+                )}
+                <h2 className="text-3xl font-bold text-gray-900">
+                  {schoolName}
+                </h2>
+                <p className="text-gray-600 text-sm">Fee Receipt</p>
               </div>
-               <div className="p-5 border-t border-gray-200 flex justify-end gap-3">
+
+              <div className="details mb-6 text-gray-700">
+                <p>
+                  <strong>Receipt No:</strong> {printData.receiptNumber}
+                </p>
+                <p>
+                  <strong>Date:</strong>{" "}
+                  {new Date(printData.paidDate).toLocaleDateString()}
+                </p>
+                <p>
+                  <strong>Student Name:</strong>{" "}
+                  {
+                    students.find((s) => s.id === printData.studentId)
+                      ?.studentName
+                  }
+                </p>
+                <p>
+                  <strong>Admission No:</strong>{" "}
+                  {
+                    students.find((s) => s.id === printData.studentId)
+                      ?.Admission_Number
+                  }
+                </p>
+                <p>
+                  <strong>Class:</strong>{" "}
+                  {(() => {
+                    // Prefer printData.class, else get from student object
+                    if (printData.class) return printData.class;
+                    const student = students.find(
+                      (s) => s.id === printData.studentId
+                    );
+                    return student?.class_ || student?.class || "";
+                  })()}
+                </p>
+                <p>
+                  <strong>Section:</strong>{" "}
+                  {(() => {
+                    // Prefer printData.class, else get from student object
+                    if (printData.class) return printData.class;
+                    const student = students.find(
+                      (s) => s.id === printData.studentId
+                    );
+                    return student?.sectionclass || student?.sectionclass || "";
+                  })()}
+                </p>
+              </div>
+
+              <table className="fee-table w-full text-left border-collapse mb-6">
+                <thead>
+                  <tr>
+                    <th className="py-2 px-4 border border-gray-300 bg-gray-100">
+                      Fee Type
+                    </th>
+                    <th className="py-2 px-4 border border-gray-300 bg-gray-100">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="py-2 px-4 border border-gray-300">
+                      {Array.isArray(printData.feeType)
+                        ? printData.feeType.join(", ")
+                        : printData.feeType}
+                    </td>
+                    <td className="py-2 px-4 border border-gray-300">
+                      ₹{printData.amount}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div className="total text-right text-gray-900 mb-6">
+                Total Paid: ₹{printData.amount}
+              </div>
+
+              <div className="payment-method text-gray-700 mb-6">
+                <p>
+                  <strong>Payment Method:</strong> {printData.paymentMode}
+                </p>
+                <p>
+                  <strong>Pending Amount:</strong>{" "}
+                  {printData.pendingAmount || 0}
+                </p>
+                {printData.description && (
+                  <p>
+                    <strong>Description:</strong> {printData.description}
+                  </p>
+                )}
+              </div>
+
+              <div className="signature text-right mt-8">
+                {principalSignature && (
+                  <img
+                    src={getImageUrl(principalSignature)}
+                    alt="Principal Signature"
+                    className="h-16 mx-auto mb-2"
+                    crossOrigin="anonymous"
+                    onError={(e) => (e.target.src = "/no-photo.png")}
+                  />
+                )}
+                <p className="font-semibold text-gray-800">
+                  Principal Signature
+                </p>
+              </div>
+
+              <div className="footer text-center text-xs text-gray-500 mt-8">
+                Thank you for your payment.
+              </div>
+            </div>
+            <div className="p-5 border-t border-gray-200 flex justify-end gap-3">
               <button
                 onClick={handlePrintReceipt}
                 className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
@@ -1701,9 +1735,7 @@ const FeeManagementSystem = () => {
                 Close
               </button>
             </div>
-            </div>
-           
-  
+          </div>
         </div>
       )}
     </div>

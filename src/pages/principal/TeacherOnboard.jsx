@@ -39,14 +39,14 @@ const TeacherOnboardingForm = () => {
     const schoolId = schools[0]?.id || null;
     setSchoolId(schoolId);
   }, []);
-      useEffect(() => {
-         // Set default zoom to 80% for this page
-         const prevZoom = document.body.style.zoom;
-         document.body.style.zoom = "85%";
-         return () => {
-           document.body.style.zoom = prevZoom || "";
-         };
-       }, []);
+  useEffect(() => {
+    // Set default zoom to 80% for this page
+    const prevZoom = document.body.style.zoom;
+    document.body.style.zoom = "85%";
+    return () => {
+      document.body.style.zoom = prevZoom || "";
+    };
+  }, []);
 
   // Fetch classes and sections dynamically
   useEffect(() => {
@@ -55,7 +55,7 @@ const TeacherOnboardingForm = () => {
       try {
         const principal_token = localStorage.getItem("principal_token");
         const res = await axios.get(
-          `https://api.jsic.in/api/classes/${schoolId}`, // Updated URL
+          `http://localhost:5002/api/classes/${schoolId}`, // Updated URL
           {
             headers: {
               Authorization: `Bearer ${principal_token}`,
@@ -128,12 +128,13 @@ const TeacherOnboardingForm = () => {
         schoolId: schoolId,
       },
       assignedSection: {
-        sectionName: data.assignedSection?.toUpperCase?.() || data.assignedSection,
+        sectionName:
+          data.assignedSection?.toUpperCase?.() || data.assignedSection,
         schoolId: schoolId,
       },
     };
 
-    const url = "https://api.jsic.in/api/teacher/register"; // Updated URL
+    const url = "http://localhost:5002/api/teacher/register"; // Updated URL
     try {
       const principal_token = localStorage.getItem("principal_token");
       const response = await fetch(url, {

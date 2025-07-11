@@ -77,21 +77,21 @@ const IDCardBuilder = () => {
     setSchoolName(schoolNameFromUser);
   }, []);
 
-    useEffect(() => {
-      // Set default zoom to 80% for this page
-      const prevZoom = document.body.style.zoom;
-      document.body.style.zoom = "85%";
-      return () => {
-        document.body.style.zoom = prevZoom || "";
-      };
-    }, []);
+  useEffect(() => {
+    // Set default zoom to 80% for this page
+    const prevZoom = document.body.style.zoom;
+    document.body.style.zoom = "85%";
+    return () => {
+      document.body.style.zoom = prevZoom || "";
+    };
+  }, []);
 
   useEffect(() => {
     if (!schoolId) return;
     const fetchAdmissions = async () => {
       try {
         const response = await axios.get(
-          `https://api.jsic.in/api/admission/students/by-school/${schoolId}`,
+          `http://localhost:5002/api/admission/students/by-school/${schoolId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem(
@@ -116,7 +116,7 @@ const IDCardBuilder = () => {
     const fetchAssets = async () => {
       try {
         const res = await fetch(
-          `https://api.jsic.in/api/newSchool/school-assets/by-school/${schoolId}`
+          `http://localhost:5002/api/newSchool/school-assets/by-school/${schoolId}`
         );
         const data = await res.json();
         setSchoolLogo(data.schoolLogo || null);

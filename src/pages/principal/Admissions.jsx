@@ -43,7 +43,11 @@ const Admissions = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
   const [schoolId, setSchoolId] = useState(null);
-  const [confirmAction, setConfirmAction] = useState({ open: false, appId: null, action: null });
+  const [confirmAction, setConfirmAction] = useState({
+    open: false,
+    appId: null,
+    action: null,
+  });
 
   useEffect(() => {
     const userRaw = localStorage.getItem("user");
@@ -58,7 +62,7 @@ const Admissions = () => {
       if (!schoolId) return;
       try {
         const response = await axios.get(
-          `https://api.jsic.in/api/admission/students/by-school/${schoolId}`,
+          `http://localhost:5002/api/admission/students/by-school/${schoolId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem(
@@ -88,7 +92,7 @@ const Admissions = () => {
       try {
         const token = localStorage.getItem("principal_token");
         const res = await axios.get(
-          `https://api.jsic.in/api/admission/public-students/by-school/${schoolId}`,
+          `http://localhost:5002/api/admission/public-students/by-school/${schoolId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (res.data.success) {
@@ -143,7 +147,7 @@ const Admissions = () => {
       const token = localStorage.getItem("principal_token");
       // Send all fields in editData, not just changed ones
       const res = await axios.put(
-        `https://api.jsic.in/api/admission/students/${selectedStudent.id}`,
+        `http://localhost:5002/api/admission/students/${selectedStudent.id}`,
         { ...editData },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -162,46 +166,48 @@ const Admissions = () => {
 
   const handleDelete = async () => {
     // Show confirmation toast
-    const toastId = toast(({ closeToast }) => (
-      <div>
-        <div className="font-semibold mb-2">
-          Are you sure you want to delete this student?
-        </div>
-        <div className="flex gap-2 justify-end">
-          <button
-            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
-            onClick={async () => {
-              closeToast();
-              try {
-                const token = localStorage.getItem("principal_token");
-                const res = await axios.delete(
-                  `https://api.jsic.in/api/admission/students/${selectedStudent.id}`,
-                  { headers: { Authorization: `Bearer ${token}` } }
-                );
-                if (res.data.success) {
-                  setAdmissions((prev) =>
-                    prev.filter((s) => s.id !== selectedStudent.id)
+    const toastId = toast(
+      ({ closeToast }) => (
+        <div>
+          <div className="font-semibold mb-2">
+            Are you sure you want to delete this student?
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button
+              className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+              onClick={async () => {
+                closeToast();
+                try {
+                  const token = localStorage.getItem("principal_token");
+                  const res = await axios.delete(
+                    `http://localhost:5002/api/admission/students/${selectedStudent.id}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
                   );
-                  setIsModalOpen(false);
-                  toast.success("Student deleted successfully!");
+                  if (res.data.success) {
+                    setAdmissions((prev) =>
+                      prev.filter((s) => s.id !== selectedStudent.id)
+                    );
+                    setIsModalOpen(false);
+                    toast.success("Student deleted successfully!");
+                  }
+                } catch (err) {
+                  toast.error("Failed to delete student");
                 }
-              } catch (err) {
-                toast.error("Failed to delete student");
-              }
-            }}
-          >
-            Yes
-          </button>
-          <button
-            className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500"
-            onClick={closeToast}
-          >
-            No
-          </button>
+              }}
+            >
+              Yes
+            </button>
+            <button
+              className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500"
+              onClick={closeToast}
+            >
+              No
+            </button>
+          </div>
         </div>
-      </div>
-    ),
-    { autoClose: false, closeOnClick: false });
+      ),
+      { autoClose: false, closeOnClick: false }
+    );
   };
 
   const filteredAdmissions = useMemo(() => {
@@ -247,7 +253,7 @@ const Admissions = () => {
     try {
       const token = localStorage.getItem("principal_token");
       const res = await axios.post(
-        `https://api.jsic.in/api/admission/public-students/${id}/decision`,
+        `http://localhost:5002/api/admission/public-students/${id}/decision`,
         { decision },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -326,7 +332,7 @@ const Admissions = () => {
 
               try {
                 const res = await axios.post(
-                  "https://api.jsic.in/api/admission/students/bulk-photo-upload",
+                  "http://localhost:5002/api/admission/students/bulk-photo-upload",
                   formData,
                   {
                     headers: {
@@ -506,7 +512,10 @@ const Admissions = () => {
                         <img
                           src={
                             student.photo
-                              ? `https://api.jsic.in/${student.photo.replace(/\\/g, "/")}`
+                              ? `http://localhost:5002/${student.photo.replace(
+                                  /\\/g,
+                                  "/"
+                                )}`
                               : "/no-photo.png"
                           }
                           alt="Student Photo"
@@ -540,7 +549,7 @@ const Admissions = () => {
                               formData.append("photo", file);
                               try {
                                 const res = await axios.post(
-                                  `https://api.jsic.in/api/admission/students/${student.Admission_Number}/photo`,
+                                  `http://localhost:5002/api/admission/students/${student.Admission_Number}/photo`,
                                   formData,
                                   {
                                     headers: {
@@ -614,7 +623,7 @@ const Admissions = () => {
                                 return;
                               try {
                                 const res = await axios.delete(
-                                  `https://api.jsic.in/api/admission/students/${student.Admission_Number}/photo`,
+                                  `http://localhost:5002/api/admission/students/${student.Admission_Number}/photo`,
                                   {
                                     headers: {
                                       Authorization: `Bearer ${localStorage.getItem(
@@ -775,13 +784,25 @@ const Admissions = () => {
                   <td className="border px-2 py-1">
                     <button
                       className="bg-green-600 text-white px-2 py-1 rounded mr-2"
-                      onClick={() => setConfirmAction({ open: true, appId: app.id, action: "approve" })}
+                      onClick={() =>
+                        setConfirmAction({
+                          open: true,
+                          appId: app.id,
+                          action: "approve",
+                        })
+                      }
                     >
                       Approve
                     </button>
                     <button
                       className="bg-red-600 text-white px-2 py-1 rounded"
-                      onClick={() => setConfirmAction({ open: true, appId: app.id, action: "reject" })}
+                      onClick={() =>
+                        setConfirmAction({
+                          open: true,
+                          appId: app.id,
+                          action: "reject",
+                        })
+                      }
                     >
                       Reject
                     </button>
@@ -1028,13 +1049,20 @@ const Admissions = () => {
             </h3>
             <div className="flex justify-center gap-4">
               <button
-                onClick={() => handlePublicDecision(confirmAction.appId, confirmAction.action)}
+                onClick={() =>
+                  handlePublicDecision(
+                    confirmAction.appId,
+                    confirmAction.action
+                  )
+                }
                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
               >
                 Yes
               </button>
               <button
-                onClick={() => setConfirmAction({ open: false, appId: null, action: null })}
+                onClick={() =>
+                  setConfirmAction({ open: false, appId: null, action: null })
+                }
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
               >
                 No

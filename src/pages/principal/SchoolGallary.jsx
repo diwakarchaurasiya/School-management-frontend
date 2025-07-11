@@ -43,14 +43,14 @@ const SchoolGallary = () => {
       toast.error("Error loading user data. Please log in again.");
     }
   }, []);
-     useEffect(() => {
-        // Set default zoom to 80% for this page
-        const prevZoom = document.body.style.zoom;
-        document.body.style.zoom = "85%";
-        return () => {
-          document.body.style.zoom = prevZoom || "";
-        };
-      }, []);
+  useEffect(() => {
+    // Set default zoom to 80% for this page
+    const prevZoom = document.body.style.zoom;
+    document.body.style.zoom = "85%";
+    return () => {
+      document.body.style.zoom = prevZoom || "";
+    };
+  }, []);
 
   // Effect to fetch gallery images when showGallery is true and schoolid is available
   useEffect(() => {
@@ -68,7 +68,7 @@ const SchoolGallary = () => {
     setLoading(true); // Set loading true while fetching
     try {
       const res = await axios.get(
-        `https://api.jsic.in/api/newSchool/landing-images/by-school/${schoolid}`
+        `http://localhost:5002/api/newSchool/landing-images/by-school/${schoolid}`
       );
       setGallery(res.data.images || []);
       console.log("Gallery fetched successfully:", res.data);
@@ -154,7 +154,7 @@ const SchoolGallary = () => {
     try {
       // Make the POST request to the backend
       const response = await axios.post(
-        "https://api.jsic.in/api/newSchool/landing-images",
+        "http://localhost:5002/api/newSchool/landing-images",
         formData
       );
       toast.success("Image uploaded successfully!");
@@ -200,7 +200,7 @@ const SchoolGallary = () => {
     setLoading(true); // Set loading true for delete operation
     try {
       await axios.delete(
-        `https://api.jsic.in/api/newSchool/landing-images/${deleteItemId}`
+        `http://localhost:5002/api/newSchool/landing-images/${deleteItemId}`
       );
       toast.success("Image deleted successfully.");
       console.log(`Image with ID ${deleteItemId} deleted.`);

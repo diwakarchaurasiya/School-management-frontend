@@ -16,7 +16,7 @@ export default function ResetPassword() {
 
     try {
       await axios.post(
-        `https://api.jsic.in/api/auth/reset-password/${token}`,
+        `http://localhost:5002/api/auth/reset-password/${token}`,
         { password }
       );
       toast.success("Password reset successful");

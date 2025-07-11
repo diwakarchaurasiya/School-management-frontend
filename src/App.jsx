@@ -71,7 +71,10 @@ function App() {
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/public/register-student" element={<AdmissionPublic />} />
+          <Route
+            path="/public/register-student"
+            element={<AdmissionPublic />}
+          />
 
           {/* Student Routes */}
           <Route
@@ -161,7 +164,7 @@ function App() {
                     />
                     <Route
                       path="Attendance-Report"
-                      element={<DailyAttendanceSummary/>}
+                      element={<DailyAttendanceSummary />}
                     />
                     <Route
                       path="myprofile"

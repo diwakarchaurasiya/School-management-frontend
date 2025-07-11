@@ -1,38 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { FaFileExcel } from 'react-icons/fa';
-import * as XLSX from 'xlsx';
+import { FaFileExcel } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const DailyAttendanceSummary = ({ token, teacherId }) => {
-  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [endDate, setEndDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [attendanceSummary, setAttendanceSummary] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [viewMode, setViewMode] = useState('daily');
+  const [error, setError] = useState("");
+  const [viewMode, setViewMode] = useState("daily");
   const [classes, setClasses] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState("");
   const [students, setStudents] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [attendance, setAttendance] = useState({});
-  const [printMode, setPrintMode] = useState('both'); // 'teachers', 'students', 'both'
+  const [printMode, setPrintMode] = useState("both"); // 'teachers', 'students', 'both'
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-   const userRaw = localStorage.getItem("user");
+  const userRaw = localStorage.getItem("user");
   const user = userRaw ? JSON.parse(userRaw) : null;
   const schools = user?.user?.schools || user?.schools || [];
   const schoolId = schools[0]?.id || null;
-
 
   // Fetch classes for the current schoolId
   useEffect(() => {
     // const fetchClasses = async () => {
     //   if (!schoolId || !token) return;
-      
     //   try {
     //     const response = await axios.get(
-    //       `https://api.jsic.in/api/classes/school/${schoolId}`,
+    //       `http://localhost:5002/api/classes/school/${schoolId}`,
     //       {
     //         headers: { Authorization: `Bearer ${token}` }
     //       }
@@ -42,32 +44,31 @@ const DailyAttendanceSummary = ({ token, teacherId }) => {
     //     console.error("Error fetching classes:", err);
     //   }
     // };
-    
     // fetchClasses();
   }, [schoolId, token]);
 
   // Fetch teacher attendance summary
   const fetchAttendanceSummary = async () => {
     if (!schoolId || !startDate || !endDate) {
-      setError('Missing required fields: schoolId or date');
+      setError("Missing required fields: schoolId or date");
       return;
     }
     setLoading(true);
-    setError('');
+    setError("");
     try {
-       const userRaw = localStorage.getItem("user");
-  const user = userRaw ? JSON.parse(userRaw) : null;
-  const schools = user?.user?.schools || user?.schools || [];
-  const schoolId = schools[0]?.id || null;
+      const userRaw = localStorage.getItem("user");
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const schools = user?.user?.schools || user?.schools || [];
+      const schoolId = schools[0]?.id || null;
       const token = localStorage.getItem("principal_token");
       const response = await axios.get(
-        `https://api.jsic.in/api/teacher-attendance/daily-summary`,
+        `http://localhost:5002/api/teacher-attendance/daily-summary`,
         {
-          params: { 
-            schoolId, 
-            date: startDate, 
+          params: {
+            schoolId,
+            date: startDate,
             endDate: endDate,
-            teacherId: teacherId || undefined 
+            teacherId: teacherId || undefined,
           },
           headers: {
             Authorization: `Bearer ${token}`,
@@ -76,8 +77,13 @@ const DailyAttendanceSummary = ({ token, teacherId }) => {
       );
       setAttendanceSummary(response.data.data);
     } catch (err) {
-      console.error("Error fetching attendance summary:", err.response || err.message);
-      setError(err.response?.data?.message || "Failed to fetch attendance summary");
+      console.error(
+        "Error fetching attendance summary:",
+        err.response || err.message
+      );
+      setError(
+        err.response?.data?.message || "Failed to fetch attendance summary"
+      );
     } finally {
       setLoading(false);
     }
@@ -86,32 +92,32 @@ const DailyAttendanceSummary = ({ token, teacherId }) => {
   // Fetch Students and Attendance
   const fetchStudentsAndAttendance = async () => {
     if (!schoolId || !startDate || !endDate) {
-      setError('Missing required fields: schoolId or date');
+      setError("Missing required fields: schoolId or date");
       return;
     }
     setLoading(true);
-    setError('');
+    setError("");
     try {
       const token = localStorage.getItem("principal_token");
       // Fetch all students for the school
       const studentsRes = await axios.get(
-        `https://api.jsic.in/api/admission/students/by-school/${schoolId}`,
+        `http://localhost:5002/api/admission/students/by-school/${schoolId}`,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       const allStudents = studentsRes.data.students || [];
 
       // Fetch attendance for date range
       const attendanceRes = await axios.get(
-        `https://api.jsic.in/api/attendance/school/${schoolId}`,
+        `http://localhost:5002/api/attendance/school/${schoolId}`,
         {
           params: { startDate, endDate, schoolId },
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       const attendanceMap = {};
-      (attendanceRes.data.data || []).forEach(record => {
+      (attendanceRes.data.data || []).forEach((record) => {
         attendanceMap[record.studentId] = record.status;
       });
 
@@ -134,19 +140,23 @@ const DailyAttendanceSummary = ({ token, teacherId }) => {
 
   // Calculate teacher totals
   const totalTeachers = attendanceSummary.length;
-  const totalPresentTeachers = attendanceSummary.filter(t => t.punches && t.punches.length > 0).length;
+  const totalPresentTeachers = attendanceSummary.filter(
+    (t) => t.punches && t.punches.length > 0
+  ).length;
   const totalAbsentTeachers = totalTeachers - totalPresentTeachers;
 
   // Calculate student totals
-  const filteredStudents = students.filter(student =>
-    (!selectedClassId || String(student.classId) === String(selectedClassId)) &&
-    (
-      student.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.idcardNumber.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  const filteredStudents = students.filter(
+    (student) =>
+      (!selectedClassId ||
+        String(student.classId) === String(selectedClassId)) &&
+      (student.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.idcardNumber.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   const totalStudents = filteredStudents.length;
-  const totalPresent = filteredStudents.filter(s => attendance[s.id] === "present").length;
+  const totalPresent = filteredStudents.filter(
+    (s) => attendance[s.id] === "present"
+  ).length;
   const totalAbsent = totalStudents - totalPresent;
 
   // Handle print functionality
@@ -156,74 +166,87 @@ const DailyAttendanceSummary = ({ token, teacherId }) => {
 
   // Excel export function
   const handleExcelExport = () => {
-    let ws, wb, data = [];
-    if (printMode === 'teachers' || printMode === 'both') {
+    let ws,
+      wb,
+      data = [];
+    if (printMode === "teachers" || printMode === "both") {
       data = attendanceSummary.map((teacher, idx) => ({
-        'Sr. No': idx + 1,
-        'Teacher Name': teacher.fullName,
-        'Email': teacher.email,
-        'Punch Details': (teacher.punches || []).map(p => `${p.type}: ${new Date(p.time).toLocaleTimeString()} (Lat: ${p.latitude}, Lon: ${p.longitude})`).join('\n'),
-        'Status': (teacher.punches && teacher.punches.length > 0) ? 'Present' : 'Absent',
+        "Sr. No": idx + 1,
+        "Teacher Name": teacher.fullName,
+        Email: teacher.email,
+        "Punch Details": (teacher.punches || [])
+          .map(
+            (p) =>
+              `${p.type}: ${new Date(p.time).toLocaleTimeString()} (Lat: ${
+                p.latitude
+              }, Lon: ${p.longitude})`
+          )
+          .join("\n"),
+        Status:
+          teacher.punches && teacher.punches.length > 0 ? "Present" : "Absent",
       }));
       ws = XLSX.utils.json_to_sheet(data);
       wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Teacher Attendance');
+      XLSX.utils.book_append_sheet(wb, ws, "Teacher Attendance");
     }
-    if (printMode === 'students' || printMode === 'both') {
+    if (printMode === "students" || printMode === "both") {
       data = filteredStudents.map((student, idx) => ({
-        'Sr. No': idx + 1,
-        'Student Name': student.studentName,
-        'ID Card No': student.idcardNumber,
-        'Admission No': student.Admission_Number,
-        'Class': student.class_,
-        'Section': student.sectionclass,
-        'Status': attendance[student.id] === 'present' ? 'Present' : 'Absent',
+        "Sr. No": idx + 1,
+        "Student Name": student.studentName,
+        "ID Card No": student.idcardNumber,
+        "Admission No": student.Admission_Number,
+        Class: student.class_,
+        Section: student.sectionclass,
+        Status: attendance[student.id] === "present" ? "Present" : "Absent",
       }));
       ws = XLSX.utils.json_to_sheet(data);
       if (!wb) wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Student Attendance');
+      XLSX.utils.book_append_sheet(wb, ws, "Student Attendance");
     }
     if (wb) {
-      XLSX.writeFile(wb, 'Attendance_Report.xlsx');
+      XLSX.writeFile(wb, "Attendance_Report.xlsx");
     }
   };
 
-// Download Monthly Teacher Attendance Summary (flat rows)
-const handleDownloadMonthlySummary = async () => {
-  if (!schoolId || !selectedMonth || !selectedYear) return;
-  try {
-    const token = localStorage.getItem("principal_token");
-    const response = await axios.get(
-      `https://api.jsic.in/api/teacher-attendance/monthly-summary`,
-      {
-        params: {
-          schoolId,
-          month: selectedMonth,
-          year: selectedYear
-        },
-        headers: { Authorization: `Bearer ${token}` }
-      }
-    );
-    const data = response.data.data || [];
-    // Format for Excel (flat rows)
-    const excelData = data.map(row => ({
-      'Sr. No': row.srNo,
-      'Teacher Name': row.teacherName,
-      'Email': row.email,
-      'Type': row.type,
-      'Time': new Date(row.time).toLocaleString(),
-      'Latitude': row.latitude,
-      'Longitude': row.longitude,
-      'createdAt': new Date(row.createdAt).toLocaleString(),
-    }));
-    const ws = XLSX.utils.json_to_sheet(excelData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Monthly Teacher Attendance');
-    XLSX.writeFile(wb, `Monthly_Teacher_Attendance_${selectedMonth}_${selectedYear}.xlsx`);
-  } catch (err) {
-    alert('Failed to download monthly summary.');
-  }
-};
+  // Download Monthly Teacher Attendance Summary (flat rows)
+  const handleDownloadMonthlySummary = async () => {
+    if (!schoolId || !selectedMonth || !selectedYear) return;
+    try {
+      const token = localStorage.getItem("principal_token");
+      const response = await axios.get(
+        `http://localhost:5002/api/teacher-attendance/monthly-summary`,
+        {
+          params: {
+            schoolId,
+            month: selectedMonth,
+            year: selectedYear,
+          },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = response.data.data || [];
+      // Format for Excel (flat rows)
+      const excelData = data.map((row) => ({
+        "Sr. No": row.srNo,
+        "Teacher Name": row.teacherName,
+        Email: row.email,
+        Type: row.type,
+        Time: new Date(row.time).toLocaleString(),
+        Latitude: row.latitude,
+        Longitude: row.longitude,
+        createdAt: new Date(row.createdAt).toLocaleString(),
+      }));
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Monthly Teacher Attendance");
+      XLSX.writeFile(
+        wb,
+        `Monthly_Teacher_Attendance_${selectedMonth}_${selectedYear}.xlsx`
+      );
+    } catch (err) {
+      alert("Failed to download monthly summary.");
+    }
+  };
   // Date range validation
   const isValidDateRange = startDate <= endDate;
 
@@ -289,20 +312,26 @@ const handleDownloadMonthlySummary = async () => {
       <div className="bg-white min-h-screen">
         {/* Header Section - No Print */}
         <div className="no-print bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-lg mb-6">
-          <h1 className="text-3xl font-bold text-center mb-2">Daily Attendance Report</h1>
-          <p className="text-center text-blue-100">Comprehensive attendance tracking system</p>
+          <h1 className="text-3xl font-bold text-center mb-2">
+            Daily Attendance Report
+          </h1>
+          <p className="text-center text-blue-100">
+            Comprehensive attendance tracking system
+          </p>
         </div>
 
         {/* Print Header - Print Only */}
         <div className="print-only hidden print-header">
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0' }}>
-            {schools[0]?.name || 'School'} - Attendance Report
+          <h1 style={{ fontSize: "24px", fontWeight: "bold", margin: "0" }}>
+            {schools[0]?.name || "School"} - Attendance Report
           </h1>
-          <p style={{ margin: '5px 0', fontSize: '14px' }}>
-            Date Range: {new Date(startDate).toLocaleDateString()} to {new Date(endDate).toLocaleDateString()}
+          <p style={{ margin: "5px 0", fontSize: "14px" }}>
+            Date Range: {new Date(startDate).toLocaleDateString()} to{" "}
+            {new Date(endDate).toLocaleDateString()}
           </p>
-          <p style={{ margin: '0', fontSize: '12px', color: '#666' }}>
-            Generated on: {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}
+          <p style={{ margin: "0", fontSize: "12px", color: "#666" }}>
+            Generated on: {new Date().toLocaleDateString()} at{" "}
+            {new Date().toLocaleTimeString()}
           </p>
         </div>
 
@@ -310,7 +339,9 @@ const handleDownloadMonthlySummary = async () => {
         <div className="no-print space-y-6 mb-8">
           {/* Date Range Filters */}
           <div className="bg-white p-6 rounded-lg shadow-lg border">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Date Range Filter</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">
+              Date Range Filter
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -323,7 +354,7 @@ const handleDownloadMonthlySummary = async () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   End Date
@@ -335,7 +366,7 @@ const handleDownloadMonthlySummary = async () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Class Filter
@@ -351,14 +382,14 @@ const handleDownloadMonthlySummary = async () => {
                   ))}
                 </select>
               </div> */}
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Print Options
                 </label>
                 <select
                   value={printMode}
-                  onChange={e => setPrintMode(e.target.value)}
+                  onChange={(e) => setPrintMode(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="both">Teachers & Students</option>
@@ -367,7 +398,7 @@ const handleDownloadMonthlySummary = async () => {
                 </select>
               </div>
             </div>
-            
+
             {!isValidDateRange && (
               <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                 End date must be after or equal to start date.
@@ -387,7 +418,7 @@ const handleDownloadMonthlySummary = async () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               <button
                 onClick={handleExcelExport}
                 disabled={!isValidDateRange}
@@ -406,21 +437,27 @@ const handleDownloadMonthlySummary = async () => {
           <div className="flex items-center space-x-4 bg-black p-3 rounded-lg shadow-lg">
             <select
               value={selectedMonth}
-              onChange={e => setSelectedMonth(Number(e.target.value))}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
               className="px-2 py-1 rounded bg-gray-900 text-white border border-gray-700"
             >
               {[...Array(12)].map((_, i) => (
-                <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>
+                <option key={i + 1} value={i + 1}>
+                  {new Date(0, i).toLocaleString("default", { month: "long" })}
+                </option>
               ))}
             </select>
             <select
               value={selectedYear}
-              onChange={e => setSelectedYear(Number(e.target.value))}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
               className="px-2 py-1 rounded bg-gray-900 text-white border border-gray-700"
             >
               {[...Array(6)].map((_, i) => {
                 const year = new Date().getFullYear() - i;
-                return <option key={year} value={year}>{year}</option>;
+                return (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                );
               })}
             </select>
             <button
@@ -440,21 +477,21 @@ const handleDownloadMonthlySummary = async () => {
               <div className="text-sm opacity-90">Teachers Present</div>
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-red-400 to-red-500 text-white p-6 rounded-lg shadow-lg">
             <div className="text-center">
               <div className="text-3xl font-bold">{totalAbsentTeachers}</div>
               <div className="text-sm opacity-90">Teachers Absent</div>
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-blue-400 to-blue-500 text-white p-6 rounded-lg shadow-lg">
             <div className="text-center">
               <div className="text-3xl font-bold">{totalPresent}</div>
               <div className="text-sm opacity-90">Students Present</div>
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-orange-400 to-orange-500 text-white p-6 rounded-lg shadow-lg">
             <div className="text-center">
               <div className="text-3xl font-bold">{totalAbsent}</div>
@@ -465,17 +502,27 @@ const handleDownloadMonthlySummary = async () => {
 
         {/* Print Summary */}
         <div className="print-only hidden print-summary">
-          <div><strong>Teachers Present:</strong> {totalPresentTeachers}</div>
-          <div><strong>Teachers Absent:</strong> {totalAbsentTeachers}</div>
-          <div><strong>Students Present:</strong> {totalPresent}</div>
-          <div><strong>Students Absent:</strong> {totalAbsent}</div>
+          <div>
+            <strong>Teachers Present:</strong> {totalPresentTeachers}
+          </div>
+          <div>
+            <strong>Teachers Absent:</strong> {totalAbsentTeachers}
+          </div>
+          <div>
+            <strong>Students Present:</strong> {totalPresent}
+          </div>
+          <div>
+            <strong>Students Absent:</strong> {totalAbsent}
+          </div>
         </div>
 
         {/* Loading State */}
         {loading && (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-600">Loading attendance data...</span>
+            <span className="ml-3 text-gray-600">
+              Loading attendance data...
+            </span>
           </div>
         )}
 
@@ -487,162 +534,196 @@ const handleDownloadMonthlySummary = async () => {
         )}
 
         {/* Teacher Attendance Table */}
-        {!loading && !error && attendanceSummary.length > 0 && (printMode === 'both' || printMode === 'teachers') && (
-          <div className="mb-8">
-            <div className="no-print">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">👨‍🏫 Teacher Attendance</h2>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-              <table className="w-full print-table">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Sr. No
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Teacher Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Punch Details
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {attendanceSummary.map((teacher, index) => (
-                    <tr key={teacher.teacherId} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {index + 1}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{teacher.fullName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {teacher.email}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {teacher.punches && teacher.punches.length > 0 ? (
-                          teacher.punches.map((punch, punchIndex) => (
-                            <div key={punchIndex} className="mb-2">
-                              <span className="font-semibold">{punch.type}:</span> {' '}
-                              {new Date(punch.time).toLocaleTimeString()}
-                              <br />
-                              <small className="text-gray-400">
-                                Lat: {punch.latitude}, Lon: {punch.longitude}
-                              </small>
-                            </div>
-                          ))
-                        ) : (
-                          <span className="text-gray-400">No punches recorded</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          teacher.punches && teacher.punches.length > 0
-                            ? 'bg-green-100 text-green-800 status-present'
-                            : 'bg-red-100 text-red-800 status-absent'
-                        }`}>
-                          {teacher.punches && teacher.punches.length > 0 ? 'Present' : 'Absent'}
-                        </span>
-                      </td>
+        {!loading &&
+          !error &&
+          attendanceSummary.length > 0 &&
+          (printMode === "both" || printMode === "teachers") && (
+            <div className="mb-8">
+              <div className="no-print">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                  👨‍🏫 Teacher Attendance
+                </h2>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                <table className="w-full print-table">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Sr. No
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Teacher Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Punch Details
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {attendanceSummary.map((teacher, index) => (
+                      <tr key={teacher.teacherId} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {teacher.fullName}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {teacher.email}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          {teacher.punches && teacher.punches.length > 0 ? (
+                            teacher.punches.map((punch, punchIndex) => (
+                              <div key={punchIndex} className="mb-2">
+                                <span className="font-semibold">
+                                  {punch.type}:
+                                </span>{" "}
+                                {new Date(punch.time).toLocaleTimeString()}
+                                <br />
+                                <small className="text-gray-400">
+                                  Lat: {punch.latitude}, Lon: {punch.longitude}
+                                </small>
+                              </div>
+                            ))
+                          ) : (
+                            <span className="text-gray-400">
+                              No punches recorded
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              teacher.punches && teacher.punches.length > 0
+                                ? "bg-green-100 text-green-800 status-present"
+                                : "bg-red-100 text-red-800 status-absent"
+                            }`}
+                          >
+                            {teacher.punches && teacher.punches.length > 0
+                              ? "Present"
+                              : "Absent"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Student Attendance Table */}
-        {!loading && !error && filteredStudents.length > 0 && (printMode === 'both' || printMode === 'students') && (
-          <div className="mb-8 print-break">
-            <div className="no-print">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">👨‍🎓 Student Attendance</h2>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-              <table className="w-full print-table">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Sr. No
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Student Name
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ID Card No
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Admission No
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Class
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Section
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredStudents.map((student, index) => (
-                    <tr key={student.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {index + 1}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{student.studentName}</div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {student.idcardNumber}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {student.Admission_Number}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {student.class_}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {student.sectionclass}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          attendance[student.id] === 'present'
-                            ? 'bg-green-100 text-green-800 status-present'
-                            : 'bg-red-100 text-red-800 status-absent'
-                        }`}>
-                          {attendance[student.id] === 'present' ? 'Present' : 'Absent'}
-                        </span>
-                      </td>
+        {!loading &&
+          !error &&
+          filteredStudents.length > 0 &&
+          (printMode === "both" || printMode === "students") && (
+            <div className="mb-8 print-break">
+              <div className="no-print">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                  👨‍🎓 Student Attendance
+                </h2>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                <table className="w-full print-table">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Sr. No
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Student Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ID Card No
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Admission No
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Class
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Section
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredStudents.map((student, index) => (
+                      <tr key={student.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {student.studentName}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {student.idcardNumber}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {student.Admission_Number}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {student.class_}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {student.sectionclass}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              attendance[student.id] === "present"
+                                ? "bg-green-100 text-green-800 status-present"
+                                : "bg-red-100 text-red-800 status-absent"
+                            }`}
+                          >
+                            {attendance[student.id] === "present"
+                              ? "Present"
+                              : "Absent"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* No Data Messages */}
         {!loading && !error && attendanceSummary.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-gray-500 text-lg">📋 No teacher attendance records found for the selected date range.</div>
+            <div className="text-gray-500 text-lg">
+              📋 No teacher attendance records found for the selected date
+              range.
+            </div>
           </div>
         )}
 
-        {!loading && !error && filteredStudents.length === 0 && students.length > 0 && (
-          <div className="text-center py-8">
-            <div className="text-gray-500 text-lg">🔍 No students found matching your search criteria.</div>
-          </div>
-        )}
+        {!loading &&
+          !error &&
+          filteredStudents.length === 0 &&
+          students.length > 0 && (
+            <div className="text-center py-8">
+              <div className="text-gray-500 text-lg">
+                🔍 No students found matching your search criteria.
+              </div>
+            </div>
+          )}
       </div>
     </>
   );

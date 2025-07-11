@@ -37,14 +37,14 @@ const StudentOnboarding = () => {
     setSchoolId(schoolId);
   }, []);
 
-     useEffect(() => {
-        // Set default zoom to 80% for this page
-        const prevZoom = document.body.style.zoom;
-        document.body.style.zoom = "85%";
-        return () => {
-          document.body.style.zoom = prevZoom || "";
-        };
-      }, []);
+  useEffect(() => {
+    // Set default zoom to 80% for this page
+    const prevZoom = document.body.style.zoom;
+    document.body.style.zoom = "85%";
+    return () => {
+      document.body.style.zoom = prevZoom || "";
+    };
+  }, []);
 
   // Fetch classes for the current schoolId
   useEffect(() => {
@@ -53,7 +53,7 @@ const StudentOnboarding = () => {
       try {
         const principal_token = localStorage.getItem("principal_token");
         const res = await axios.get(
-          `https://api.jsic.in/api/classes/${schoolId}`,
+          `http://localhost:5002/api/classes/${schoolId}`,
           {
             headers: {
               Authorization: `Bearer ${principal_token}`,
@@ -77,7 +77,7 @@ const StudentOnboarding = () => {
     const fetchSubjects = async () => {
       try {
         const res = await axios.get(
-          `https://api.jsic.in/api/newSchool/schools/${schoolId}`,
+          `http://localhost:5002/api/newSchool/schools/${schoolId}`,
           {
             params: {
               schoolId: schoolId,
@@ -149,7 +149,7 @@ const StudentOnboarding = () => {
       const principal_token = localStorage.getItem("principal_token");
 
       const response = await axios.post(
-        "https://api.jsic.in/api/admission/admission",
+        "http://localhost:5002/api/admission/admission",
         formattedData,
         {
           headers: {

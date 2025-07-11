@@ -1,11 +1,18 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import axios from "axios";
-import { Pencil, Search, X, ChevronDown, ChevronUp, ArrowDownToLine } from "lucide-react";
+import {
+  Pencil,
+  Search,
+  X,
+  ChevronDown,
+  ChevronUp,
+  ArrowDownToLine,
+} from "lucide-react";
 import { toast } from "react-toastify";
 import html2pdf from "html2pdf.js";
 import { getImageUrl } from "../../utils/getImageUrl";
 
-const API_BASE_URL = 'https://api.jsic.in/api';
+const API_BASE_URL = "http://localhost:5002/api";
 const RESULT_PUBLISH_API = `${API_BASE_URL}/resultpublish`;
 
 const ResultPublish = () => {
@@ -22,33 +29,34 @@ const ResultPublish = () => {
   const [editingResult, setEditingResult] = useState(null);
   const [publishStatus, setPublishStatus] = useState({});
   const examTypes = ["Quarterly", "Halfyearly", "Annual"];
-  const [currentExamType, setCurrentExamType] = useState('Quarterly');
+  const [currentExamType, setCurrentExamType] = useState("Quarterly");
   const [academicYear, setAcademicYear] = useState(new Date().getFullYear());
   const [expandedClass, setExpandedClass] = useState(null);
   const [schoolLogo, setSchoolLogo] = useState(null);
   const [schoolLogoBase64, setSchoolLogoBase64] = useState(null);
-  const [principalSignatureBase64, setPrincipalSignatureBase64] = useState(null);
+  const [principalSignatureBase64, setPrincipalSignatureBase64] =
+    useState(null);
   const [schoolNameFromUser, setSchoolNameFromUser] = useState("");
   const printRef = useRef();
   const [isPrinting, setIsPrinting] = useState(false);
   const [schoolDetails, setSchoolDetails] = useState({
-    schoolname: '',
-    address: '',
-    medium: '',
-    phone: '',
-    establishmentYear: '',
-    affiliationStatus: '',
-    schoolAffiliationNumber: '',
+    schoolname: "",
+    address: "",
+    medium: "",
+    phone: "",
+    establishmentYear: "",
+    affiliationStatus: "",
+    schoolAffiliationNumber: "",
   });
 
-     useEffect(() => {
-        // Set default zoom to 80% for this page
-        const prevZoom = document.body.style.zoom;
-        document.body.style.zoom = "85%";
-        return () => {
-          document.body.style.zoom = prevZoom || "";
-        };
-      }, []);
+  useEffect(() => {
+    // Set default zoom to 80% for this page
+    const prevZoom = document.body.style.zoom;
+    document.body.style.zoom = "85%";
+    return () => {
+      document.body.style.zoom = prevZoom || "";
+    };
+  }, []);
   // Add this function after your existing state declarations
   const fetchPublishStatus = async (classId) => {
     try {
@@ -57,17 +65,20 @@ const ResultPublish = () => {
         `${RESULT_PUBLISH_API}/publish-status/${classId}`,
         {
           params: {
-            examType: currentExamType || 'Annual',
-            academicYear
+            examType: currentExamType || "Annual",
+            academicYear,
           },
           headers: {
-            Authorization: `Bearer ${principal_token}`
-          }
+            Authorization: `Bearer ${principal_token}`,
+          },
         }
       );
       return response.data.published;
     } catch (error) {
-      console.error(`Error fetching publish status for class ${classId}:`, error);
+      console.error(
+        `Error fetching publish status for class ${classId}:`,
+        error
+      );
       return false;
     }
   };
@@ -84,7 +95,7 @@ const ResultPublish = () => {
           {
             headers: {
               Authorization: `Bearer ${principal_token}`,
-            }
+            },
           }
         );
 
@@ -94,12 +105,14 @@ const ResultPublish = () => {
         // Handle principal signature
         if (data.principalSignature) {
           const signatureResponse = await axios.get(data.principalSignature, {
-            responseType: 'blob',
+            responseType: "blob",
             headers: {
               Authorization: `Bearer ${principal_token}`,
-            }
+            },
           });
-          const signatureBase64 = await convertBlobToBase64(signatureResponse.data);
+          const signatureBase64 = await convertBlobToBase64(
+            signatureResponse.data
+          );
           setPrincipalSignatureBase64(signatureBase64);
         } else {
           setPrincipalSignatureBase64(null);
@@ -108,10 +121,10 @@ const ResultPublish = () => {
         // Handle school logo
         if (data.schoolLogo) {
           const logoResponse = await axios.get(data.schoolLogo, {
-            responseType: 'blob',
+            responseType: "blob",
             headers: {
               Authorization: `Bearer ${principal_token}`,
-            }
+            },
           });
           const logoBase64 = await convertBlobToBase64(logoResponse.data);
           setSchoolLogoBase64(logoBase64);
@@ -147,7 +160,7 @@ const ResultPublish = () => {
   // Group students by class
   const studentsByClass = useMemo(() => {
     const grouped = {};
-    students.forEach(student => {
+    students.forEach((student) => {
       if (student.class_) {
         if (!grouped[student.class_]) {
           grouped[student.class_] = [];
@@ -163,7 +176,9 @@ const ResultPublish = () => {
     () =>
       students.filter(
         (student) =>
-          student.studentName?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          student.studentName
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) &&
           (classFilter ? student.class_ === classFilter : true)
       ),
     [students, searchQuery, classFilter]
@@ -174,11 +189,12 @@ const ResultPublish = () => {
     const user = userRaw ? JSON.parse(userRaw) : null;
     const schools = user?.user?.schools || user?.schools || [];
     const schoolId = schools[0]?.id || null;
-    const schoolNameFromUser = schools[0]?.Schoolname || schools[0]?.schoolName || "";
-    
+    const schoolNameFromUser =
+      schools[0]?.Schoolname || schools[0]?.schoolName || "";
+
     setSchoolId(schoolId);
     setSchoolNameFromUser(schoolNameFromUser);
-    
+
     if (schoolId) {
       fetchSchoolDetails(schoolId);
     }
@@ -192,10 +208,10 @@ const ResultPublish = () => {
         {
           headers: {
             Authorization: `Bearer ${principal_token}`,
-          }
+          },
         }
       );
-      
+
       // Map the response data to our state structure
       setSchoolDetails({
         Schoolname: response.data.Schoolname,
@@ -205,7 +221,7 @@ const ResultPublish = () => {
         establishmentYear: response.data.establishmentYear,
         affiliationStatus: response.data.affiliationStatus,
         schoolAffiliationNumber: response.data.schoolAffiliationNumber,
-        schoolCode: response.data.schoolCode
+        schoolCode: response.data.schoolCode,
       });
     } catch (err) {
       console.error("Error fetching school details:", err);
@@ -214,21 +230,21 @@ const ResultPublish = () => {
 
   const fetchStudentsAndResults = async () => {
     if (!schoolId) return;
-    
+
     try {
       setLoading(true);
       const principal_token = localStorage.getItem("principal_token");
 
       // Fetch students
       const studentsResponse = await axios.get(
-        `https://api.jsic.in/api/admission/students/by-school/${schoolId}`,
+        `http://localhost:5002/api/admission/students/by-school/${schoolId}`,
         {
           headers: {
             Authorization: `Bearer ${principal_token}`,
           },
         }
       );
-      
+
       const fetchedStudents = studentsResponse.data.students || [];
       setStudents(fetchedStudents);
 
@@ -249,14 +265,16 @@ const ResultPublish = () => {
 
       // Fetch publishing status for each class
       const publishedClasses = {};
-      for (const classId of Array.from(new Set(fetchedStudents.map(s => s.class_))).filter(Boolean)) {
+      for (const classId of Array.from(
+        new Set(fetchedStudents.map((s) => s.class_))
+      ).filter(Boolean)) {
         try {
           const statusResponse = await axios.get(
             `${API_BASE_URL}/resultpublish/publish-status/${classId}`,
             {
               params: {
-                examType: currentExamType || 'Final',
-                academicYear
+                examType: currentExamType || "Final",
+                academicYear,
               },
               headers: {
                 Authorization: `Bearer ${principal_token}`,
@@ -265,12 +283,14 @@ const ResultPublish = () => {
           );
           publishedClasses[classId] = statusResponse.data.published || false;
         } catch (err) {
-          console.error(`Error fetching publish status for class ${classId}:`, err);
+          console.error(
+            `Error fetching publish status for class ${classId}:`,
+            err
+          );
           publishedClasses[classId] = false;
         }
       }
       setPublishStatus(publishedClasses);
-
     } catch (err) {
       setError(err.message);
       toast.error("Failed to fetch data");
@@ -281,12 +301,12 @@ const ResultPublish = () => {
 
   useEffect(() => {
     if (!schoolId || !currentExamType) return;
-    
+
     const fetchInitialData = async () => {
       setLoading(true);
       try {
         await fetchStudentsAndResults();
-        
+
         // Fetch publish status for all classes
         const publishedClasses = {};
         for (const classId of classOptions) {
@@ -314,7 +334,7 @@ const ResultPublish = () => {
   const handleEdit = (result) => {
     setEditingResult({
       ...result,
-      marks: result.marks || 0
+      marks: result.marks || 0,
     });
     setEditMode(true);
   };
@@ -322,18 +342,18 @@ const ResultPublish = () => {
   const handleUpdate = async () => {
     try {
       const principal_token = localStorage.getItem("principal_token");
-      
+
       const response = await axios.put(
         `${API_BASE_URL}/result/results/${editingResult.id}`,
         {
           marks: parseInt(editingResult.marks),
           subject: editingResult.subject,
-          semester: editingResult.semester
+          semester: editingResult.semester,
         },
         {
           headers: {
-            Authorization: `Bearer ${principal_token}`
-          }
+            Authorization: `Bearer ${principal_token}`,
+          },
         }
       );
 
@@ -356,87 +376,104 @@ const ResultPublish = () => {
       toast.error("School ID not found");
       return false;
     }
-    
+
     const classStudents = studentsByClass[classId] || [];
-    const allHaveResults = classStudents.every(student => {
+    const allHaveResults = classStudents.every((student) => {
       const results = studentResults[student.id] || [];
       return results.length > 0;
     });
-    
+
     if (!allHaveResults) {
-      toast.error("All students in the class must have results before publishing");
+      toast.error(
+        "All students in the class must have results before publishing"
+      );
       return false;
     }
-    
+
     return true;
   };
 
   const handlePublishResults = async (classId) => {
-    if (!currentExamType) { // Ensure examType is defined
-      console.error('Exam type is not defined');
-      toast.error('Please select an exam type before publishing results.');
+    if (!currentExamType) {
+      // Ensure examType is defined
+      console.error("Exam type is not defined");
+      toast.error("Please select an exam type before publishing results.");
       return;
     }
-  
-    console.log('Publishing results with data:', { classId, examType: currentExamType, academicYear, schoolId }); // Debugging log
-  
+
+    console.log("Publishing results with data:", {
+      classId,
+      examType: currentExamType,
+      academicYear,
+      schoolId,
+    }); // Debugging log
+
     try {
       const token = localStorage.getItem("principal_token"); // Retrieve token from localStorage
-      const response = await fetch('https://api.jsic.in/api/resultpublish/publish', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ classId, examType: currentExamType, academicYear, schoolId }),
-      });
-  
+      const response = await fetch(
+        "http://localhost:5002/api/resultpublish/publish",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            classId,
+            examType: currentExamType,
+            academicYear,
+            schoolId,
+          }),
+        }
+      );
+
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
       }
-  
+
       const data = await response.json();
-      console.log('Publish successful:', data); // Debugging log
+      console.log("Publish successful:", data); // Debugging log
       toast.success(`Results for Class ${classId} published successfully`);
       setPublishStatus((prev) => ({
         ...prev,
         [classId]: true,
       }));
     } catch (error) {
-      console.error('Error publishing results:', error); // Debugging log
-      toast.error('Failed to publish results. Please try again.');
+      console.error("Error publishing results:", error); // Debugging log
+      toast.error("Failed to publish results. Please try again.");
     }
   };
 
   const handleUnpublishResults = async (classId) => {
     try {
       const principal_token = localStorage.getItem("principal_token");
-      
+
       const response = await axios.post(
         `${RESULT_PUBLISH_API}/unpublish`,
         {
           classId,
           examType: currentExamType,
           academicYear,
-          schoolId
+          schoolId,
         },
         {
           headers: {
-            Authorization: `Bearer ${principal_token}`
-          }
+            Authorization: `Bearer ${principal_token}`,
+          },
         }
       );
 
       if (response.data) {
         toast.success(`Results for Class ${classId} unpublished successfully`);
-        setPublishStatus(prev => ({
+        setPublishStatus((prev) => ({
           ...prev,
-          [classId]: false
+          [classId]: false,
         }));
         fetchStudentsAndResults(); // Refresh data
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.error || "Failed to unpublish results";
+      const errorMsg =
+        error.response?.data?.error || "Failed to unpublish results";
       toast.error(errorMsg);
       console.error("Unpublish error:", error);
     }
@@ -449,14 +486,15 @@ const ResultPublish = () => {
   const checkClassResultsStatus = (classId) => {
     const classStudents = studentsByClass[classId] || [];
     const totalStudents = classStudents.length;
-    const studentsWithResults = classStudents.filter(student => 
-      (studentResults[student.id] || []).length > 0
+    const studentsWithResults = classStudents.filter(
+      (student) => (studentResults[student.id] || []).length > 0
     ).length;
-    
+
     return {
       total: totalStudents,
       withResults: studentsWithResults,
-      percentage: totalStudents > 0 ? (studentsWithResults / totalStudents) * 100 : 0
+      percentage:
+        totalStudents > 0 ? (studentsWithResults / totalStudents) * 100 : 0,
     };
   };
 
@@ -465,29 +503,29 @@ const ResultPublish = () => {
     if (printRef.current) {
       // Set printing mode to hide actions column
       setIsPrinting(true);
-      
+
       // Remove overflow and max-height temporarily for PDF generation
       const modalContent = printRef.current;
       const originalStyle = modalContent.style.cssText;
-      modalContent.style.maxHeight = 'none';
-      modalContent.style.overflow = 'visible';
+      modalContent.style.maxHeight = "none";
+      modalContent.style.overflow = "visible";
 
       html2pdf()
         .set({
           margin: 1,
           filename: `Results_${selectedStudent.studentName}.pdf`,
-          html2canvas: { 
+          html2canvas: {
             scale: 2,
             useCORS: true,
             logging: true,
             windowWidth: 794,
-            windowHeight: 1123 // A4 height
+            windowHeight: 1123, // A4 height
           },
-          jsPDF: { 
-            unit: "mm", 
-            format: "a4", 
-            orientation: "portrait"
-          }
+          jsPDF: {
+            unit: "mm",
+            format: "a4",
+            orientation: "portrait",
+          },
         })
         .from(printRef.current)
         .save()
@@ -541,7 +579,7 @@ const ResultPublish = () => {
             value={currentExamType}
             onChange={(e) => setCurrentExamType(e.target.value)}
           >
-            {examTypes.map(type => (
+            {examTypes.map((type) => (
               <option key={type} value={type}>
                 {type}
               </option>
@@ -563,22 +601,26 @@ const ResultPublish = () => {
       {/* Class-wise results section */}
       <div className="space-y-4 mt-8">
         <h2 className="text-xl font-semibold">Class-wise Results Management</h2>
-        
+
         {loading ? (
           <div className="text-center py-4">Loading class data...</div>
         ) : (
           Object.keys(studentsByClass)
             .sort()
-            .map(classId => {
+            .map((classId) => {
               const status = checkClassResultsStatus(classId);
-              const isComplete = status.total > 0 && status.total === status.withResults;
+              const isComplete =
+                status.total > 0 && status.total === status.withResults;
               const isExpanded = expandedClass === classId;
-              
+
               return (
-                <div key={classId} className="border rounded-lg overflow-hidden">
-                  <div 
+                <div
+                  key={classId}
+                  className="border rounded-lg overflow-hidden"
+                >
+                  <div
                     className={`p-4 flex justify-between items-center cursor-pointer ${
-                      isExpanded ? 'bg-blue-50' : 'bg-gray-50'
+                      isExpanded ? "bg-blue-50" : "bg-gray-50"
                     }`}
                     onClick={() => toggleClassExpansion(classId)}
                   >
@@ -590,43 +632,49 @@ const ResultPublish = () => {
                       )}
                       <h3 className="text-lg font-medium">Class {classId}</h3>
                     </div>
-                    
+
                     <div className="flex items-center gap-6">
                       <div className="text-sm">
-                        <span className="font-semibold">{status.withResults}</span>
-                        <span className="text-gray-500">/{status.total} students with results</span>
+                        <span className="font-semibold">
+                          {status.withResults}
+                        </span>
+                        <span className="text-gray-500">
+                          /{status.total} students with results
+                        </span>
                       </div>
-                      
+
                       <div className="w-40 bg-gray-200 rounded-full h-2.5">
-                        <div 
+                        <div
                           className={`h-2.5 rounded-full ${
-                            isComplete ? 'bg-green-600' : 'bg-blue-600'
-                          }`} 
+                            isComplete ? "bg-green-600" : "bg-blue-600"
+                          }`}
                           style={{ width: `${status.percentage}%` }}
                         ></div>
                       </div>
-                      
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          publishStatus[classId] 
-                            ? handleUnpublishResults(classId) 
+                          publishStatus[classId]
+                            ? handleUnpublishResults(classId)
                             : handlePublishResults(classId);
                         }}
                         disabled={!isComplete || !currentExamType}
                         className={`px-4 py-1 rounded ${
                           !isComplete || !currentExamType
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                             : publishStatus[classId]
-                              ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                              : 'bg-green-100 text-green-700 hover:bg-green-200'
+                            ? "bg-red-100 text-red-700 hover:bg-red-200"
+                            : "bg-green-100 text-green-700 hover:bg-green-200"
                         }`}
                       >
-                        {publishStatus[classId] ? 'Unpublish Results' : 'Publish Results'}
+                        {publishStatus[classId]
+                          ? "Unpublish Results"
+                          : "Publish Results"}
                       </button>
                     </div>
                   </div>
-                  
+
                   {isExpanded && (
                     <div className="p-4">
                       <table className="min-w-full text-sm">
@@ -634,11 +682,21 @@ const ResultPublish = () => {
                           <tr>
                             <th className="border px-2 py-1 text-left">#</th>
                             <th className="border px-2 py-1 text-left">Name</th>
-                            <th className="border px-2 py-1 text-left">Roll Number</th>
-                            <th className="border px-2 py-1 text-left">Section</th>
-                            <th className="border px-2 py-1 text-left">Father's Name</th>
-                            <th className="border px-2 py-1 text-left">Result Status</th>
-                            <th className="border px-2 py-1 text-left">Actions</th>
+                            <th className="border px-2 py-1 text-left">
+                              Roll Number
+                            </th>
+                            <th className="border px-2 py-1 text-left">
+                              Section
+                            </th>
+                            <th className="border px-2 py-1 text-left">
+                              Father's Name
+                            </th>
+                            <th className="border px-2 py-1 text-left">
+                              Result Status
+                            </th>
+                            <th className="border px-2 py-1 text-left">
+                              Actions
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -649,13 +707,25 @@ const ResultPublish = () => {
                             return (
                               <tr
                                 key={student.id}
-                                className={idx % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-blue-50 transition"}
+                                className={
+                                  idx % 2 === 0
+                                    ? "bg-white"
+                                    : "bg-gray-50 hover:bg-blue-50 transition"
+                                }
                               >
                                 <td className="border px-2 py-1">{idx + 1}</td>
-                                <td className="border px-2 py-1 font-semibold">{student.studentName}</td>
-                                <td className="border px-2 py-1">{student.rollNumber}</td>
-                                <td className="border px-2 py-1">{student.sectionclass}</td>
-                                <td className="border px-2 py-1">{student.fatherName}</td>
+                                <td className="border px-2 py-1 font-semibold">
+                                  {student.studentName}
+                                </td>
+                                <td className="border px-2 py-1">
+                                  {student.rollNumber}
+                                </td>
+                                <td className="border px-2 py-1">
+                                  {student.sectionclass}
+                                </td>
+                                <td className="border px-2 py-1">
+                                  {student.fatherName}
+                                </td>
                                 <td className="border px-2 py-1">
                                   {hasResults ? (
                                     <span className="inline-block px-2 py-1 bg-green-100 text-green-700 rounded">
@@ -673,7 +743,9 @@ const ResultPublish = () => {
                                     className="text-blue-600 hover:underline flex items-center gap-1"
                                   >
                                     <Pencil size={16} />
-                                    {hasResults ? 'View Results' : 'Add Results'}
+                                    {hasResults
+                                      ? "View Results"
+                                      : "Add Results"}
                                   </button>
                                 </td>
                               </tr>
@@ -691,7 +763,10 @@ const ResultPublish = () => {
 
       {/* Individual students table - show if filtered */}
       {searchQuery || classFilter ? (
-        <div className="overflow-auto rounded shadow mt-4" style={{ maxHeight: "400px" }}>
+        <div
+          className="overflow-auto rounded shadow mt-4"
+          style={{ maxHeight: "400px" }}
+        >
           <h2 className="text-xl font-semibold mb-2">Filtered Students</h2>
           <table className="min-w-full border text-sm">
             <thead className="bg-gray-100 sticky top-0 z-10">
@@ -721,17 +796,27 @@ const ResultPublish = () => {
                   return (
                     <tr
                       key={student.id}
-                      className={idx % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-blue-50 transition"}
+                      className={
+                        idx % 2 === 0
+                          ? "bg-white"
+                          : "bg-gray-50 hover:bg-blue-50 transition"
+                      }
                     >
                       <td className="border px-2 py-1">{idx + 1}</td>
-                      <td className="border px-2 py-1 font-semibold">{student.studentName}</td>
+                      <td className="border px-2 py-1 font-semibold">
+                        {student.studentName}
+                      </td>
                       <td className="border px-2 py-1">{student.rollNumber}</td>
                       <td className="border px-2 py-1">{student.class_}</td>
-                      <td className="border px-2 py-1">{student.sectionclass}</td>
+                      <td className="border px-2 py-1">
+                        {student.sectionclass}
+                      </td>
                       <td className="border px-2 py-1">{student.fatherName}</td>
                       <td className="border px-2 py-1">
                         {hasResults ? (
-                          <span className="text-green-600">Results Available</span>
+                          <span className="text-green-600">
+                            Results Available
+                          </span>
                         ) : (
                           <span className="text-gray-500">No Results</span>
                         )}
@@ -742,7 +827,7 @@ const ResultPublish = () => {
                           className="text-blue-600 hover:underline flex items-center gap-1"
                         >
                           <Pencil size={16} />
-                          {hasResults ? 'View Results' : 'Add Results'}
+                          {hasResults ? "View Results" : "Add Results"}
                         </button>
                       </td>
                     </tr>
@@ -757,12 +842,12 @@ const ResultPublish = () => {
       {/* Student Results Modal */}
       {showModal && selectedStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div 
-            ref={printRef} 
+          <div
+            ref={printRef}
             className="bg-white rounded-lg p-6 w-[800px]"
-            style={{ 
+            style={{
               maxHeight: showModal ? "80vh" : "none",
-              overflow: showModal ? "auto" : "visible"
+              overflow: showModal ? "auto" : "visible",
             }}
           >
             {/* Header with school info */}
@@ -772,11 +857,11 @@ const ResultPublish = () => {
                   src={getImageUrl(schoolLogo) || "/school-logo.png"}
                   alt="School Logo"
                   className="w-20 h-20 mr-4"
-                  style={{ 
+                  style={{
                     objectFit: "contain",
                     backgroundColor: "white",
                     padding: "2px",
-                    borderRadius: "4px"
+                    borderRadius: "4px",
                   }}
                   onError={(e) => {
                     e.target.onerror = null;
@@ -785,26 +870,28 @@ const ResultPublish = () => {
                 />
                 <div className="flex-1">
                   <h1 className="text-3xl font-bold text-indigo-900">
-                    {schoolDetails.schoolname || schoolNameFromUser || "School Name"}
+                    {schoolDetails.schoolname ||
+                      schoolNameFromUser ||
+                      "School Name"}
                   </h1>
                   <h2 className="text-xl font-bold text-indigo-800">
                     {schoolDetails.medium || ""} Medium
                   </h2>
                   <p className="text-sm text-indigo-800">
-                    {schoolDetails.affiliationStatus 
+                    {schoolDetails.affiliationStatus
                       ? `Affiliated to ${schoolDetails.affiliationStatus} Board`
                       : ""}
                   </p>
                   <div className="text-sm mt-1">
                     <p>{schoolDetails.address}</p>
                     <p>Est. {schoolDetails.establishmentYear}</p>
-                    {schoolDetails.phone && (
-                      <p>Phone: {schoolDetails.phone}</p>
-                    )}
+                    {schoolDetails.phone && <p>Phone: {schoolDetails.phone}</p>}
                   </div>
                   <div className="flex justify-between text-sm text-pink-600 font-bold mt-1">
                     <p>School Code: {schoolDetails.schoolCode}</p>
-                    <p>Affiliation No: {schoolDetails.schoolAffiliationNumber}</p>
+                    <p>
+                      Affiliation No: {schoolDetails.schoolAffiliationNumber}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -815,7 +902,9 @@ const ResultPublish = () => {
               {/* Student Photo */}
               <div className="w-32 h-40 border-2 border-gray-300 rounded-lg overflow-hidden flex-shrink-0">
                 <img
-                  src={getImageUrl(selectedStudent.photo) || "/default-student.png"}
+                  src={
+                    getImageUrl(selectedStudent.photo) || "/default-student.png"
+                  }
                   alt="Student"
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -832,25 +921,40 @@ const ResultPublish = () => {
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p><strong>Class:</strong> {selectedStudent.class_}</p>
-                    <p><strong>Roll Number:</strong> {selectedStudent.rollNumber}</p>
-                    <p><strong>Section:</strong> {selectedStudent.sectionclass}</p>
+                    <p>
+                      <strong>Class:</strong> {selectedStudent.class_}
+                    </p>
+                    <p>
+                      <strong>Roll Number:</strong> {selectedStudent.rollNumber}
+                    </p>
+                    <p>
+                      <strong>Section:</strong> {selectedStudent.sectionclass}
+                    </p>
                   </div>
                   <div>
-                    <p><strong>Father's Name:</strong> {selectedStudent.fatherName}</p>
-                    <p><strong>Mother's Name:</strong> {selectedStudent.motherName}</p>
-                    <p><strong>Admission No:</strong> {selectedStudent.Admission_Number}</p>
+                    <p>
+                      <strong>Father's Name:</strong>{" "}
+                      {selectedStudent.fatherName}
+                    </p>
+                    <p>
+                      <strong>Mother's Name:</strong>{" "}
+                      {selectedStudent.motherName}
+                    </p>
+                    <p>
+                      <strong>Admission No:</strong>{" "}
+                      {selectedStudent.Admission_Number}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold">
-                Result 
-              </h3>
+              <h3 className="text-xl font-semibold">Result</h3>
               {!isPrinting && ( // Hide buttons during PDF generation
-                <div className="flex gap-2 no-print"> {/* Add no-print class */}
+                <div className="flex gap-2 no-print">
+                  {" "}
+                  {/* Add no-print class */}
                   <button
                     onClick={() => {
                       setShowModal(false);
@@ -889,7 +993,10 @@ const ResultPublish = () => {
                 <tbody>
                   {(studentResults[selectedStudent.id] || []).length === 0 ? (
                     <tr>
-                      <td colSpan={isPrinting ? 3 : 4} className="border px-4 py-6 text-center text-gray-500">
+                      <td
+                        colSpan={isPrinting ? 3 : 4}
+                        className="border px-4 py-6 text-center text-gray-500"
+                      >
                         No results available for this student.
                       </td>
                     </tr>
@@ -898,16 +1005,18 @@ const ResultPublish = () => {
                       <tr key={result.id}>
                         <td className="border px-4 py-2">{result.subject}</td>
                         <td className="border px-4 py-2">
-                          {editMode && editingResult?.id === result.id && !isPrinting ? (
+                          {editMode &&
+                          editingResult?.id === result.id &&
+                          !isPrinting ? (
                             <input
                               type="number"
                               min="0"
                               max="100"
                               value={editingResult.marks}
-                              onChange={(e) => 
+                              onChange={(e) =>
                                 setEditingResult({
                                   ...editingResult,
-                                  marks: e.target.value
+                                  marks: e.target.value,
                                 })
                               }
                               className="border rounded px-2 py-1 w-20"
@@ -961,12 +1070,15 @@ const ResultPublish = () => {
                 </div>
                 <div>
                   {principalSignatureBase64 && (
-                    <img src={getImageUrl(principalSignatureBase64)} alt="Principal Signature" crossOrigin="anonymous" 
+                    <img
+                      src={getImageUrl(principalSignatureBase64)}
+                      alt="Principal Signature"
+                      crossOrigin="anonymous"
                       className="h-6 mb-1"
                       style={{ objectFit: "contain" }}
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.style.display = 'none';
+                        e.target.style.display = "none";
                       }}
                     />
                   )}

@@ -24,13 +24,12 @@ const Navbar = ({ toggleSidebar }) => {
   const schoolNameFromUser =
     schools[0]?.Schoolname || schools[0]?.schoolName || "";
 
-
   useEffect(() => {
     if (!schoolId) return;
     const fetchLogo = async () => {
       try {
         const res = await fetch(
-          `https://api.jsic.in/api/newSchool/school-assets/by-school/${schoolId}`
+          `http://localhost:5002/api/newSchool/school-assets/by-school/${schoolId}`
         );
         const data = await res.json();
         setSchoolLogo(data.schoolLogo || null);
@@ -46,7 +45,7 @@ const Navbar = ({ toggleSidebar }) => {
     const fetchSchoolName = async () => {
       try {
         const res = await fetch(
-          `https://api.jsic.in/api/newSchool/schools/${schoolId}`
+          `http://localhost:5002/api/newSchool/schools/${schoolId}`
         );
         const data = await res.json();
         setSchoolName(data.name || "");
@@ -74,7 +73,6 @@ const Navbar = ({ toggleSidebar }) => {
         <Menu
           className="text-white w-6 h-6 cursor-pointer"
           onClick={toggleSidebar}
-          onMouseEnter={toggleSidebar}
         />
         {schoolLogo && (
           <img

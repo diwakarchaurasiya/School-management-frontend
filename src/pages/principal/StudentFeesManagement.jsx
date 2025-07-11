@@ -63,7 +63,7 @@
 //         }
 
 //         const response = await axios.get(
-//           `https://api.jsic.in/api/admission/students/by-school/${schoolId}`,
+//           `http://localhost:5002/api/admission/students/by-school/${schoolId}`,
 //           {
 //             headers: {
 //               Authorization: `Bearer ${principal_token}`,
@@ -135,7 +135,7 @@
 //       const principal_token = localStorage.getItem("principal_token");
 
 //       const updateResponse = await axios.put(
-//         `https://api.jsic.in/api/admission/students/${selectedStudent.id}/feesPaid`,
+//         `http://localhost:5002/api/admission/students/${selectedStudent.id}/feesPaid`,
 //         {
 //           feesPaid: paidMonths, // ✅ send as array
 //         },
@@ -159,7 +159,7 @@
 //       const schoolId = schools[0]?.id || null;
 
 //       const response = await axios.get(
-//         `https://api.jsic.in/api/admission/students/by-school/${schoolId}`,
+//         `http://localhost:5002/api/admission/students/by-school/${schoolId}`,
 //         {
 //           headers: {
 //             Authorization: `Bearer ${principal_token}`,

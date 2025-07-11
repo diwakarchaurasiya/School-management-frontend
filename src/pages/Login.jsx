@@ -25,10 +25,10 @@ const Login = ({ setUser }) => {
     };
 
     const apiEndpoints = {
-      student: "https://api.jsic.in/api/auth/student/login",
-      teacher: "https://api.jsic.in/api/auth/teacher/login",
-      principal: "https://api.jsic.in/api/auth/principal/login",
-      parents: "https://api.jsic.in/api/auth/parents/login", // Updated to match backend
+      student: "http://localhost:5002/api/auth/student/login",
+      teacher: "http://localhost:5002/api/auth/teacher/login",
+      principal: "http://localhost:5002/api/auth/principal/login",
+      parents: "http://localhost:5002/api/auth/parents/login", // Updated to match backend
     };
 
     try {

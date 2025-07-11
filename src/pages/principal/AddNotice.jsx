@@ -25,7 +25,7 @@ const AddNotice = () => {
     try {
       const token = localStorage.getItem("principal_token");
       const res = await fetch(
-        "https://api.jsic.in/api/notices/notices", // Updated API URL
+        "http://localhost:5002/api/notices/notices", // Updated API URL
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -63,7 +63,7 @@ const AddNotice = () => {
         throw new Error("Authentication token not found");
       }
 
-      const res = await fetch("https://api.jsic.in/api/notices/notices", {
+      const res = await fetch("http://localhost:5002/api/notices/notices", {
         method: "POST",
         body: formData,
         headers: {
@@ -98,7 +98,7 @@ const AddNotice = () => {
       }
 
       const res = await fetch(
-        `https://api.jsic.in/api/notices/notices/${noticeToDelete.id}`, // Updated API URL
+        `http://localhost:5002/api/notices/notices/${noticeToDelete.id}`, // Updated API URL
         {
           method: "DELETE",
           headers: {

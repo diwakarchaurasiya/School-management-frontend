@@ -12,7 +12,7 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      await axios.post("https://api.jsic.in/api/auth/forgot-password", {
+      await axios.post("http://localhost:5002/api/auth/forgot-password", {
         email,
       });
       toast.success("Reset link sent. Please check your inbox.");

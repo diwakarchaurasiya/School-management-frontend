@@ -56,7 +56,7 @@ const TeacherSalaryManagement = () => {
       try {
         const principal_token = localStorage.getItem("principal_token");
         const response = await axios.get(
-          `https://api.jsic.in/api/teacher/teachers/by-school/${schoolId}`,
+          `http://localhost:5002/api/teacher/teachers/by-school/${schoolId}`,
           {
             headers: {
               Authorization: `Bearer ${principal_token}`,
@@ -121,7 +121,7 @@ const TeacherSalaryManagement = () => {
       const paidMonths = months.slice(0, selectedMonthIndex + 1);
       const principal_token = localStorage.getItem("principal_token");
       await axios.put(
-        `https://api.jsic.in/api/teacher/teacher/${selectedTeacher.id}/salaryPaid`,
+        `http://localhost:5002/api/teacher/teacher/${selectedTeacher.id}/salaryPaid`,
         { salaryPaid: paidMonths },
         {
           headers: {
@@ -132,7 +132,7 @@ const TeacherSalaryManagement = () => {
 
       // Refresh the teacher list after successful update
       const response = await axios.get(
-        `https://api.jsic.in/api/teacher/teachers/by-school/${schoolId}`,
+        `http://localhost:5002/api/teacher/teachers/by-school/${schoolId}`,
         {
           headers: {
             Authorization: `Bearer ${principal_token}`,

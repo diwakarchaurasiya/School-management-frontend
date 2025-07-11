@@ -28,14 +28,14 @@ const Teachers = () => {
   const schools = user?.user?.schools || user?.schools || [];
   const schoolId = schools[0]?.id || null;
 
-     useEffect(() => {
-        // Set default zoom to 80% for this page
-        const prevZoom = document.body.style.zoom;
-        document.body.style.zoom = "85%";
-        return () => {
-          document.body.style.zoom = prevZoom || "";
-        };
-      }, []);
+  useEffect(() => {
+    // Set default zoom to 80% for this page
+    const prevZoom = document.body.style.zoom;
+    document.body.style.zoom = "85%";
+    return () => {
+      document.body.style.zoom = prevZoom || "";
+    };
+  }, []);
 
   const principal_token = localStorage.getItem("principal_token");
 
@@ -44,16 +44,12 @@ const Teachers = () => {
       setTeachers([]);
       setLoading(false);
       return;
-      
     }
-    fetch(
-      `https://api.jsic.in/api/teacher/teachers/by-school/${schoolId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${principal_token}`,
-        },
-      }
-    )
+    fetch(`http://localhost:5002/api/teacher/teachers/by-school/${schoolId}`, {
+      headers: {
+        Authorization: `Bearer ${principal_token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         setTeachers(data.teachers || []);
@@ -84,7 +80,7 @@ const Teachers = () => {
 
   const confirmDelete = () => {
     if (!teacherToDelete) return;
-    fetch(`https://api.jsic.in/api/teacher/teacher/${teacherToDelete}`, {
+    fetch(`http://localhost:5002/api/teacher/teacher/${teacherToDelete}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${principal_token}`,
@@ -93,7 +89,9 @@ const Teachers = () => {
       .then((res) => {
         if (res.ok) {
           toast.success("Teacher deleted successfully");
-          setTeachers((prev) => prev.filter((teacher) => teacher.id !== teacherToDelete));
+          setTeachers((prev) =>
+            prev.filter((teacher) => teacher.id !== teacherToDelete)
+          );
         } else {
           toast.error("Failed to delete teacher");
         }
@@ -153,7 +151,7 @@ const Teachers = () => {
         (key) => updateData[key] === undefined && delete updateData[key]
       );
       const res = await fetch(
-        `https://api.jsic.in/api/teacher/teacher/${selectedTeacher.id}`,
+        `http://localhost:5002/api/teacher/teacher/${selectedTeacher.id}`,
         {
           method: "PUT",
           headers: {
@@ -170,7 +168,7 @@ const Teachers = () => {
         setEditForm(null);
         // Refresh teacher list
         fetch(
-          `https://api.jsic.in/api/teacher/teachers/by-school/${schoolId}`,
+          `http://localhost:5002/api/teacher/teachers/by-school/${schoolId}`,
           {
             headers: {
               Authorization: `Bearer ${principal_token}`,
@@ -488,7 +486,9 @@ const Teachers = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Email</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Email
+                </label>
                 <input
                   name="email"
                   value={editForm.email || ""}
@@ -498,7 +498,9 @@ const Teachers = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Phone</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Phone
+                </label>
                 <input
                   name="phone"
                   value={editForm.phone || ""}

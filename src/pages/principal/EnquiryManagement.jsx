@@ -115,7 +115,7 @@ const EnquiryManagement = () => {
   const principalToken =
     localStorage.getItem("principal_token") || "your_principal_token_here";
 
-  const API_BASE_URL = "https://api.jsic.in/api/enquiry";
+  const API_BASE_URL = "http://localhost:5002/api/enquiry";
 
   /**
    * Fetches all enquiries from the API.

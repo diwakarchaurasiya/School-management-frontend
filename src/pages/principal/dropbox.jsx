@@ -24,7 +24,7 @@ const DropBox = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `https://api.jsic.in/api/admission/students/by-school/${schoolId}`,
+        `http://localhost:5002/api/admission/students/by-school/${schoolId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
@@ -32,7 +32,9 @@ const DropBox = () => {
         }
       );
       const dropped = (res.data.students || []).filter(
-        (student) => student.isStudentmarkdrop === true || student.isStudentmarkdrop === "true"
+        (student) =>
+          student.isStudentmarkdrop === true ||
+          student.isStudentmarkdrop === "true"
       );
       setDroppedStudents(dropped);
     } catch (err) {
@@ -45,7 +47,7 @@ const DropBox = () => {
     if (!window.confirm("Revoke drop for this student?")) return;
     try {
       await axios.patch(
-        `https://api.jsic.in/api/sessions/students/${studentId}/revoke`,
+        `http://localhost:5002/api/sessions/students/${studentId}/revoke`,
         {},
         {
           headers: {
@@ -64,7 +66,7 @@ const DropBox = () => {
     if (!window.confirm("Delete this dropped student permanently?")) return;
     try {
       await axios.delete(
-        `https://api.jsic.in/api/admission/students/${studentId}`,
+        `http://localhost:5002/api/admission/students/${studentId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
@@ -105,7 +107,9 @@ const DropBox = () => {
                 <tr key={student.id || student._id}>
                   <td className="border px-2 py-1">{idx + 1}</td>
                   <td className="border px-2 py-1">{student.studentName}</td>
-                  <td className="border px-2 py-1">{student.Admission_Number}</td>
+                  <td className="border px-2 py-1">
+                    {student.Admission_Number}
+                  </td>
                   <td className="border px-2 py-1">{student.class_}</td>
                   <td className="border px-2 py-1">{student.sectionclass}</td>
                   <td className="border px-2 py-1">{student.fatherName}</td>

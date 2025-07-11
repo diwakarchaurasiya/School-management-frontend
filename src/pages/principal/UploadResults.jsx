@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import CsvPreviewTable from "../../components/CsvPreviewTable";
 import axios from "axios";
 
-const API_BASE_URL = 'https://api.jsic.in/api';
+const API_BASE_URL = "http://localhost:5002/api";
 
 const UploadResults = () => {
   const [selectedClass, setSelectedClass] = useState("");
@@ -62,7 +62,7 @@ const UploadResults = () => {
         console.error("No schools found for user");
         return;
       }
-      
+
       const schoolIdFromStorage = schools[0]?.id;
       if (!schoolIdFromStorage) {
         console.error("No school ID found in first school");
@@ -85,7 +85,9 @@ const UploadResults = () => {
           `${API_BASE_URL}/admission/students/by-school/${schoolId}?class=${selectedClass}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
+              Authorization: `Bearer ${localStorage.getItem(
+                "principal_token"
+              )}`,
             },
           }
         );
@@ -107,7 +109,9 @@ const UploadResults = () => {
 
               // Check if subjects is a string and split it into an array
               if (typeof student.subjects === "string") {
-                parsedSubjects = student.subjects.split(",").map((subject) => subject.trim());
+                parsedSubjects = student.subjects
+                  .split(",")
+                  .map((subject) => subject.trim());
               } else {
                 parsedSubjects = student.subjects; // Assume it's already an array or object
               }
@@ -121,7 +125,10 @@ const UploadResults = () => {
           }
         });
 
-        if (!subjectsData[selectedClass] || subjectsData[selectedClass].length === 0) {
+        if (
+          !subjectsData[selectedClass] ||
+          subjectsData[selectedClass].length === 0
+        ) {
           console.warn(`No valid subjects found for class: ${selectedClass}`);
         }
 
@@ -155,7 +162,6 @@ const UploadResults = () => {
       // If subjects is an array, iterate over it
       subjects.forEach((subjectName) => {
         baseHeaders.push(`${subjectName} Theory & practical"100""`);
-      
       });
     } else if (subjects && typeof subjects === "object") {
       // If subjects is an object, iterate over its keys
@@ -217,9 +223,9 @@ const UploadResults = () => {
 
     setLoading(true);
     setError(null);
-    
+
     const principal_token = localStorage.getItem("principal_token");
-    
+
     if (!principal_token) {
       setError("Please login to continue");
       setLoading(false);
@@ -258,7 +264,8 @@ const UploadResults = () => {
       }
 
       const data = await studentsResponse.json();
-      const studentsArray = data.students && Array.isArray(data.students) ? data.students : [];
+      const studentsArray =
+        data.students && Array.isArray(data.students) ? data.students : [];
 
       const filteredStudents = studentsArray.filter(
         (student) =>
@@ -268,15 +275,14 @@ const UploadResults = () => {
 
       // Map results to students
       const resultsMap = {};
-      filteredStudents.forEach(student => {
-        resultsMap[student.id] = allResults.filter(result => 
-          result.studentId === student.id
+      filteredStudents.forEach((student) => {
+        resultsMap[student.id] = allResults.filter(
+          (result) => result.studentId === student.id
         );
       });
-      
+
       setStudentResults(resultsMap);
       setStudents(filteredStudents);
-
     } catch (err) {
       setError(err.message);
       toast.error("Failed to fetch students and results");
@@ -301,23 +307,26 @@ const UploadResults = () => {
     }
 
     // Check if subjects exist for the selected class
-    if (!subjectConfigs[selectedClass] || !Array.isArray(subjectConfigs[selectedClass])) {
+    if (
+      !subjectConfigs[selectedClass] ||
+      !Array.isArray(subjectConfigs[selectedClass])
+    ) {
       toast.error("No subjects found for selected class");
       return;
     }
 
     const headers = [
       "rollNumber",
-      "studentName", 
+      "studentName",
       "studentId",
-      "schoolId",      // Add schoolId to headers
+      "schoolId", // Add schoolId to headers
       "classId",
       "class_",
       "sectionclass",
       "examinationType",
-      ...subjectConfigs[selectedClass].map(subject => 
-        `${subject} Theory and practical"100"`
-      )
+      ...subjectConfigs[selectedClass].map(
+        (subject) => `${subject} Theory and practical"100"`
+      ),
     ];
 
     let csvContent = headers.join(",") + "\n";
@@ -327,12 +336,12 @@ const UploadResults = () => {
         student.rollNumber || "",
         student.studentName || "",
         student.id || "",
-        schoolId || "",     // Add schoolId to row data
+        schoolId || "", // Add schoolId to row data
         student.classId || "",
         student.class_ || "",
         student.sectionclass || "",
         selectedExamType,
-        ...(subjectConfigs[selectedClass] || []).map(() => "0")
+        ...(subjectConfigs[selectedClass] || []).map(() => "0"),
       ];
 
       csvContent += row.join(",") + "\n";
@@ -355,20 +364,24 @@ const UploadResults = () => {
       "rollNumber",
       "studentName",
       "studentId",
-      "schoolId",      // Add schoolId to required fields
+      "schoolId", // Add schoolId to required fields
       "classId",
       "class_",
       "sectionclass",
-      "examinationType"
+      "examinationType",
     ];
 
     data.forEach((row, index) => {
       if (index === 0) return; // Skip header row
 
       // Check for missing required fields
-      const missingFields = requiredFields.filter(field => !row[field]);
+      const missingFields = requiredFields.filter((field) => !row[field]);
       if (missingFields.length > 0) {
-        errors.push(`Row ${index + 1}: Missing required fields: ${missingFields.join(", ")}`);
+        errors.push(
+          `Row ${index + 1}: Missing required fields: ${missingFields.join(
+            ", "
+          )}`
+        );
       }
 
       // Validate subject marks
@@ -378,7 +391,9 @@ const UploadResults = () => {
           if (isNaN(marks)) {
             errors.push(`Row ${index + 1}: Invalid marks format for ${key}`);
           } else if (marks < 0 || marks > 100) {
-            errors.push(`Row ${index + 1}: Marks for ${key} must be between 0 and 100`);
+            errors.push(
+              `Row ${index + 1}: Marks for ${key} must be between 0 and 100`
+            );
           }
         }
       });
@@ -449,20 +464,24 @@ const UploadResults = () => {
             (expectedHeader) =>
               !uploadedHeaders.some(
                 (uploadedHeader) =>
-                  normalizeHeader(uploadedHeader) === normalizeHeader(expectedHeader)
+                  normalizeHeader(uploadedHeader) ===
+                  normalizeHeader(expectedHeader)
               )
           );
 
           if (missingHeaders.length > 0) {
             setHeaderError(
               `Missing required columns: ${missingHeaders.join(", ")}\n` +
-              "Please use the sample template for the correct format."
+                "Please use the sample template for the correct format."
             );
             return;
           }
 
           // Validate the data rows
-          const validationErrors = validateCsvData(results.data, expectedHeadersList);
+          const validationErrors = validateCsvData(
+            results.data,
+            expectedHeadersList
+          );
           if (validationErrors.length > 0) {
             setHeaderError(validationErrors.join("\n"));
             return;
@@ -510,13 +529,16 @@ const UploadResults = () => {
       formData.append("schoolId", schoolId.toString()); // Convert to string if it's a number
       formData.append("semester", selectedExamType);
 
-      const response = await fetch(`${API_BASE_URL}/result/results/bulk/upload`, {
-        method: "POST",
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${principal_token}`,
-        },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/result/results/bulk/upload`,
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${principal_token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -536,13 +558,12 @@ const UploadResults = () => {
       setSelectedSection("");
       setSelectedExamType("");
       setStudents([]);
-      setStudentResults({});  
+      setStudentResults({});
       setError(null);
       setUploadLoading(false);
 
       // Refresh the results
       await fetchStudentsAndResults();
-
     } catch (error) {
       console.error("Upload error:", error);
       toast.error(error.message || "Error uploading results");
@@ -698,8 +719,9 @@ const UploadResults = () => {
                 <tbody>
                   {students.map((student, index) => {
                     const studentResult = studentResults[student.id] || [];
-                    const totalMarks = studentResult.reduce((sum, result) => 
-                      sum + (result.marks || 0), 0
+                    const totalMarks = studentResult.reduce(
+                      (sum, result) => sum + (result.marks || 0),
+                      0
                     );
 
                     return (
@@ -710,20 +732,28 @@ const UploadResults = () => {
                         <td className="p-2 border">{student.class_}</td>
                         <td className="p-2 border">{student.sectionclass}</td>
                         {Array.isArray(subjectConfigs[selectedClass]) &&
-                          subjectConfigs[selectedClass].map((subject, subIndex) => {
-                            const subjectResult = studentResult.find(
-                              r => r.subject === subject
-                            );
-                            return (
-                              <td key={`${subject}-${subIndex}`} className="p-2 border">
-                                {subjectResult ? (
-                                  <span>
-                                    {subjectResult.marks} ({subjectResult.grade})
-                                  </span>
-                                ) : "-"}
-                              </td>
-                            );
-                          })}
+                          subjectConfigs[selectedClass].map(
+                            (subject, subIndex) => {
+                              const subjectResult = studentResult.find(
+                                (r) => r.subject === subject
+                              );
+                              return (
+                                <td
+                                  key={`${subject}-${subIndex}`}
+                                  className="p-2 border"
+                                >
+                                  {subjectResult ? (
+                                    <span>
+                                      {subjectResult.marks} (
+                                      {subjectResult.grade})
+                                    </span>
+                                  ) : (
+                                    "-"
+                                  )}
+                                </td>
+                              );
+                            }
+                          )}
                         <td className="p-2 border">{totalMarks}</td>
                       </tr>
                     );

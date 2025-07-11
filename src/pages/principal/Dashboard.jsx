@@ -62,14 +62,14 @@ export default function PrincipalDashboard() {
   }, []);
   console.log("School ID:", schoolId);
 
-     useEffect(() => {
-        // Set default zoom to 80% for this page
-        const prevZoom = document.body.style.zoom;
-        document.body.style.zoom = "85%";
-        return () => {
-          document.body.style.zoom = prevZoom || "";
-        };
-      }, []);
+  useEffect(() => {
+    // Set default zoom to 80% for this page
+    const prevZoom = document.body.style.zoom;
+    document.body.style.zoom = "85%";
+    return () => {
+      document.body.style.zoom = prevZoom || "";
+    };
+  }, []);
 
   // Student Attendance Chart Data
   const [attendanceChartData, setAttendanceChartData] = useState([]);
@@ -82,29 +82,31 @@ export default function PrincipalDashboard() {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 6);
-    const startStr = startDate.toISOString().split('T')[0];
-    const endStr = endDate.toISOString().split('T')[0];
-    axios.get(
-      `https://api.jsic.in/api/attendance/school/${schoolId}`,
-      {
+    const startStr = startDate.toISOString().split("T")[0];
+    const endStr = endDate.toISOString().split("T")[0];
+    axios
+      .get(`http://localhost:5002/api/attendance/school/${schoolId}`, {
         params: { startDate: startStr, endDate: endStr, schoolId },
-        headers: { Authorization: `Bearer ${token}` }
-      }
-    ).then((attendanceRes) => {
-      const records = attendanceRes.data.data || [];
-      // Group by date
-      const dateMap = {};
-      records.forEach(record => {
-        const date = record.date?.slice(0, 10);
-        if (!date) return;
-        if (!dateMap[date]) dateMap[date] = { Present: 0, Absent: 0 };
-        if (record.status === 'present') dateMap[date].Present++;
-        else dateMap[date].Absent++;
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((attendanceRes) => {
+        const records = attendanceRes.data.data || [];
+        // Group by date
+        const dateMap = {};
+        records.forEach((record) => {
+          const date = record.date?.slice(0, 10);
+          if (!date) return;
+          if (!dateMap[date]) dateMap[date] = { Present: 0, Absent: 0 };
+          if (record.status === "present") dateMap[date].Present++;
+          else dateMap[date].Absent++;
+        });
+        // Format for recharts
+        const chartData = Object.entries(dateMap).map(([day, val]) => ({
+          day,
+          ...val,
+        }));
+        setAttendanceChartData(chartData);
       });
-      // Format for recharts
-      const chartData = Object.entries(dateMap).map(([day, val]) => ({ day, ...val }));
-      setAttendanceChartData(chartData);
-    });
   }, [schoolId]);
 
   const COLORS = ["#000000", "#787878 "]; // Black for boys, gray for girls
@@ -187,7 +189,7 @@ export default function PrincipalDashboard() {
     if (!schoolId) return;
 
     axios
-      .get(`https://api.jsic.in/api/dashboard/${schoolId}`)
+      .get(`http://localhost:5002/api/dashboard/${schoolId}`)
       .then((response) => {
         const data = response.data;
 
@@ -232,7 +234,7 @@ export default function PrincipalDashboard() {
     setEnquiriesLoading(true);
     setEnquiriesError(null);
     axios
-      .get("https://api.jsic.in/api/enquiry", {
+      .get("http://localhost:5002/api/enquiry", {
         headers: {
           Authorization: `Bearer ${principalToken}`,
           "Content-Type": "application/json",
@@ -251,28 +253,28 @@ export default function PrincipalDashboard() {
   useEffect(() => {
     if (!schoolId) return;
     const token = localStorage.getItem("principal_token");
-    const today = new Date().toISOString().split('T')[0];
-    axios.get(
-      `https://api.jsic.in/api/teacher-attendance/daily-summary`,
-      {
+    const today = new Date().toISOString().split("T")[0];
+    axios
+      .get(`http://localhost:5002/api/teacher-attendance/daily-summary`, {
         params: { schoolId, date: today },
         headers: { Authorization: `Bearer ${token}` },
-      }
-    )
-    .then((response) => {
-      const data = response.data.data || [];
-      const presentCount = data.filter(t => t.punches && t.punches.length > 0).length;
-      setPresentTeacherStats((prev) => ({
-        ...prev,
-        value: presentCount,
-      }));
-    })
-    .catch((err) => {
-      setPresentTeacherStats((prev) => ({
-        ...prev,
-        value: '0',
-      }));
-    });
+      })
+      .then((response) => {
+        const data = response.data.data || [];
+        const presentCount = data.filter(
+          (t) => t.punches && t.punches.length > 0
+        ).length;
+        setPresentTeacherStats((prev) => ({
+          ...prev,
+          value: presentCount,
+        }));
+      })
+      .catch((err) => {
+        setPresentTeacherStats((prev) => ({
+          ...prev,
+          value: "0",
+        }));
+      });
   }, [schoolId]);
 
   const [studentStats, setStudentStats] = useState({
@@ -560,7 +562,9 @@ export default function PrincipalDashboard() {
                       enquiries.map((enquiry, index) => (
                         <tr key={enquiry.id || index} className="border-b">
                           <td className="px-4 py-2">{index + 1}</td>
-                          <td className="px-4 py-2 font-medium">{enquiry.name}</td>
+                          <td className="px-4 py-2 font-medium">
+                            {enquiry.name}
+                          </td>
                           <td className="px-4 py-2">{enquiry.class}</td>
                           <td className="px-4 py-2">📞 {enquiry.mobile}</td>
                           <td className="px-4 py-2">
@@ -570,7 +574,10 @@ export default function PrincipalDashboard() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="5" className="px-4 py-4 text-center text-gray-400">
+                        <td
+                          colSpan="5"
+                          className="px-4 py-4 text-center text-gray-400"
+                        >
                           No enquiries found.
                         </td>
                       </tr>

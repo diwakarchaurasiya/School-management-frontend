@@ -19,8 +19,6 @@ import {
 import { Link } from "react-router-dom";
 import { getImageUrl } from "../utils/getImageUrl";
 
-
-
 function LandingPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -59,7 +57,7 @@ function LandingPage() {
   const fetchNotices = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("https://api.jsic.in/api/notices/notices");
+      const res = await axios.get("http://localhost:5002/api/notices/notices");
       // Duplicate notices for seamless scrolling if there are enough notices
       const fetchedNotices = res.data.notices || [];
       if (fetchedNotices.length > 2) {
@@ -126,7 +124,7 @@ function LandingPage() {
     setLoading(true);
     try {
       const res = await axios.get(
-        `https://api.jsic.in/api/newSchool/landing-images/by-school/${schoolid}`
+        `http://localhost:5002/api/newSchool/landing-images/by-school/${schoolid}`
       );
       const images = res.data.images || [];
 
@@ -194,7 +192,7 @@ function LandingPage() {
           "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
           "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
           "https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
-          "https://api.jsic.in/uploads/1749936916244.png?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
+          "http://localhost:5002/uploads/1749936916244.png?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
           "https://images.unsplash.com/photo-1509062522246-3755977927d7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
         ]);
       }
@@ -254,7 +252,7 @@ function LandingPage() {
 
     setSubmittingEnquiry(true);
     try {
-      await axios.post("https://api.jsic.in/api/enquiry", payload);
+      await axios.post("http://localhost:5002/api/enquiry", payload);
       toast.success(
         "Enquiry submitted successfully! We will contact you soon."
       );
@@ -279,7 +277,7 @@ function LandingPage() {
 
   useEffect(() => {
     if (schoolid) {
-      fetch(`https://api.jsic.in/api/newSchool/school-apk/latest/${schoolid}`)
+      fetch(`http://localhost:5002/api/newSchool/school-apk/latest/${schoolid}`)
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => setApkInfo(data))
         .catch(() => setApkInfo(null));
@@ -323,7 +321,7 @@ function LandingPage() {
                   href={getImageUrl(apkInfo.url)}
                   download
                   className="text-gray-700 hover:text-blue-700 transition-colors flex items-center"
-                  title={`Download School App (v${apkInfo.version || ''})`}
+                  title={`Download School App (v${apkInfo.version || ""})`}
                 >
                   <Download className="w-6 h-6 mr-1" />
                   <span className="hidden sm:inline">Download App</span>
@@ -686,7 +684,7 @@ function LandingPage() {
                   )}
                 </div>
               ))
-           ) }
+            )}
           </div>
         </div>
 
@@ -843,7 +841,7 @@ function LandingPage() {
                   />
                 </div>
               ))
-           ) }
+            )}
           </div>
         </div>
       </div>

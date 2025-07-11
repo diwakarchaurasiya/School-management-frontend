@@ -21,7 +21,22 @@ const TeacherUploadResults = () => {
   const labelClass = "block text-sm font-medium text-gray-700 mb-1";
   const groupClass = "mb-4";
 
-  const classes = ["LKG", "UKG", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+  const classes = [
+    "LKG",
+    "UKG",
+    "I",
+    "II",
+    "III",
+    "IV",
+    "V",
+    "VI",
+    "VII",
+    "VIII",
+    "IX",
+    "X",
+    "XI",
+    "XII",
+  ];
   const sections = ["A", "B", "C", "D"];
   const semesters = ["First", "Second", "Third", "Annual"];
 
@@ -123,7 +138,13 @@ const TeacherUploadResults = () => {
   const expectedHeaders = () => {
     if (!selectedClass) return [];
     const subjects = subjectConfigs[selectedClass];
-    let headers = ["rollNumber", "studentName", "studentId", "classId", "semester"];
+    let headers = [
+      "rollNumber",
+      "studentName",
+      "studentId",
+      "classId",
+      "semester",
+    ];
     subjects.forEach((subject) => {
       headers.push(`${subject.name} Theory (Max: ${subject.maxTheory})`);
       if (subject.maxPractical > 0) {
@@ -150,31 +171,38 @@ const TeacherUploadResults = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`https://api.jsic.in/api/admission/students?class=${selectedClass}`);
+        const response = await fetch(
+          `http://localhost:5002/api/admission/students?class=${selectedClass}`
+        );
         if (!response.ok) {
-          throw new Error('Failed to fetch students');
+          throw new Error("Failed to fetch students");
         }
         const data = await response.json();
-        
+
         // Check if data has students property and it's an array
-        const studentsArray = data.students && Array.isArray(data.students) ? data.students : [];
-        
+        const studentsArray =
+          data.students && Array.isArray(data.students) ? data.students : [];
+
         // Filter students by both class and section
-        const filteredStudents = studentsArray.filter(student =>
-          student.class_ === selectedClass && student.sectionclass === selectedSection
+        const filteredStudents = studentsArray.filter(
+          (student) =>
+            student.class_ === selectedClass &&
+            student.sectionclass === selectedSection
         );
 
         // Fetch the class ID for these students
-        const classResponse = await fetch(`https://api.jsic.in/api/classes?name=${selectedClass}`);
+        const classResponse = await fetch(
+          `http://localhost:5002/api/classes?name=${selectedClass}`
+        );
         const classData = await classResponse.json();
         const classId = classData.classes?.[0]?.id || "";
-        
+
         // Add class ID to each student
-        const studentsWithClassId = filteredStudents.map(student => ({
+        const studentsWithClassId = filteredStudents.map((student) => ({
           ...student,
-          classId
+          classId,
         }));
-        
+
         setStudents(studentsWithClassId);
 
         if (filteredStudents.length === 0) {
@@ -208,13 +236,13 @@ const TeacherUploadResults = () => {
     students.forEach((student) => {
       // Start with basic information
       let row = [
-        student.rollNumber || "", 
+        student.rollNumber || "",
         student.studentName || "",
         student.id || "",
         student.classId || "",
-        selectedSemester
+        selectedSemester,
       ];
-      
+
       // Add subject marks placeholders
       subjectConfigs[selectedClass].forEach((subject) => {
         row.push("0"); // Theory marks
@@ -279,22 +307,23 @@ const TeacherUploadResults = () => {
       const studentId = row[columnMap["studentId"]];
       const classId = row[columnMap["classId"]];
       const semester = row[columnMap["semester"]];
-      
+
       // Process each subject
       subjectConfigs[selectedClass].forEach((subject) => {
         const theoryHeader = `${subject.name} Theory (Max: ${subject.maxTheory})`;
-        const practicalHeader = subject.maxPractical > 0 
-          ? `${subject.name} Practical (Max: ${subject.maxPractical})` 
-          : null;
+        const practicalHeader =
+          subject.maxPractical > 0
+            ? `${subject.name} Practical (Max: ${subject.maxPractical})`
+            : null;
 
         // Get theory marks
         const theoryMarks = parseInt(row[columnMap[theoryHeader]] || 0);
-        
+
         // Get practical marks if applicable
         const practicalMarks = practicalHeader
           ? parseInt(row[columnMap[practicalHeader]] || 0)
           : 0;
-        
+
         // Calculate total marks for the subject
         const totalMarks = theoryMarks + practicalMarks;
 
@@ -305,7 +334,7 @@ const TeacherUploadResults = () => {
           semester,
           subject: subject.name,
           marks: totalMarks,
-          teacherId
+          teacherId,
         });
       });
     });
@@ -335,25 +364,28 @@ const TeacherUploadResults = () => {
     try {
       // Convert CSV data to the format needed by the server
       const resultsData = convertToResultsFormat(csvData);
-      
+
       // Create a FormData object for file upload
       const formData = new FormData();
-      formData.append('file', file);
-      
+      formData.append("file", file);
+
       // Upload to the server
-      const response = await fetch(`https://api.jsic.in/api/results/bulk/teacher/${teacherId}`, {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await fetch(
+        `http://localhost:5002/api/results/bulk/teacher/${teacherId}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to upload results');
+        throw new Error(errorData.error || "Failed to upload results");
       }
 
       const result = await response.json();
       toast.success(`Successfully uploaded ${result.results.count} results!`);
-      
+
       // Reset the form
       setFile(null);
       setCsvData([]);
@@ -366,16 +398,17 @@ const TeacherUploadResults = () => {
 
   const calculateTotalMarks = (student) => {
     if (!selectedClass || !student) return 0;
-    
+
     let total = 0;
     subjectConfigs[selectedClass].forEach((subject) => {
       const theory = parseInt(student[`${subject.name}Theory`]) || 0;
-      const practical = subject.maxPractical > 0 
-        ? (parseInt(student[`${subject.name}Practical`]) || 0)
-        : 0;
+      const practical =
+        subject.maxPractical > 0
+          ? parseInt(student[`${subject.name}Practical`]) || 0
+          : 0;
       total += theory + practical;
     });
-    
+
     return total;
   };
 
@@ -539,7 +572,9 @@ const TeacherUploadResults = () => {
                       <React.Fragment key={subject.name}>
                         <th className="p-2 border">{subject.name} Theory</th>
                         {subject.maxPractical > 0 && (
-                          <th className="p-2 border">{subject.name} Practical</th>
+                          <th className="p-2 border">
+                            {subject.name} Practical
+                          </th>
                         )}
                       </React.Fragment>
                     ))}
@@ -558,11 +593,11 @@ const TeacherUploadResults = () => {
                       {subjectConfigs[selectedClass]?.map((subject) => (
                         <React.Fragment key={subject.name}>
                           <td className="p-2 border">
-                            {student[`${subject.name}Theory`] || '-'}
+                            {student[`${subject.name}Theory`] || "-"}
                           </td>
                           {subject.maxPractical > 0 && (
                             <td className="p-2 border">
-                              {student[`${subject.name}Practical`] || '-'}
+                              {student[`${subject.name}Practical`] || "-"}
                             </td>
                           )}
                         </React.Fragment>

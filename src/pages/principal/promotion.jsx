@@ -22,7 +22,12 @@ const Promotion = () => {
   const [classList, setClassList] = useState([]); // Add this state
   const [promotionHistory, setPromotionHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
   const [reloading, setReloading] = useState(false);
 
   // Get unique class options from classList (for filter dropdown)
@@ -40,14 +45,14 @@ const Promotion = () => {
     const schoolId = schools[0]?.id || null;
     setSchoolId(schoolId);
   }, []);
-    useEffect(() => {
-      // Set default zoom to 80% for this page
-      const prevZoom = document.body.style.zoom;
-      document.body.style.zoom = "85%";
-      return () => {
-        document.body.style.zoom = prevZoom || "";
-      };
-    }, []);
+  useEffect(() => {
+    // Set default zoom to 80% for this page
+    const prevZoom = document.body.style.zoom;
+    document.body.style.zoom = "85%";
+    return () => {
+      document.body.style.zoom = prevZoom || "";
+    };
+  }, []);
 
   useEffect(() => {
     if (!schoolId) return;
@@ -61,7 +66,7 @@ const Promotion = () => {
   const fetchSessions = async () => {
     try {
       const res = await axios.get(
-        `https://api.jsic.in/api/sessions/schools/${schoolId}/sessions`,
+        `http://localhost:5002/api/sessions/schools/${schoolId}/sessions`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
@@ -72,10 +77,12 @@ const Promotion = () => {
       if (res.data.sessions && res.data.sessions.length > 0) {
         // Fetch active session info
         const activeRes = await axios.get(
-          `https://api.jsic.in/api/sessions/sessions/active?schoolId=${schoolId}`,
+          `http://localhost:5002/api/sessions/sessions/active?schoolId=${schoolId}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
+              Authorization: `Bearer ${localStorage.getItem(
+                "principal_token"
+              )}`,
             },
           }
         );
@@ -83,7 +90,7 @@ const Promotion = () => {
         if (active) {
           setActiveSession(active);
           setSessionFilter(active.id); // Set default to active session
-          fetchStudents(active.id);    // Fetch students for active session
+          fetchStudents(active.id); // Fetch students for active session
           fetchActiveSession(res.data.sessions);
         } else {
           // fallback to first session if no active session
@@ -102,7 +109,7 @@ const Promotion = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `https://api.jsic.in/api/admission/students/by-school/${schoolId}?sessionId=${sessionId}`,
+        `http://localhost:5002/api/admission/students/by-school/${schoolId}?sessionId=${sessionId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
@@ -121,7 +128,7 @@ const Promotion = () => {
     if (!schoolId) return;
     try {
       const res = await axios.get(
-        `https://api.jsic.in/api/sessions/sessions/active?schoolId=${schoolId}`,
+        `http://localhost:5002/api/sessions/sessions/active?schoolId=${schoolId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
@@ -132,8 +139,9 @@ const Promotion = () => {
 
       let allSessions = allSessionsParam || sessions;
       // Sort sessions by startDate or year
-      allSessions = allSessions.sort((a, b) =>
-        new Date(a.startDate || a.year) - new Date(b.startDate || b.year)
+      allSessions = allSessions.sort(
+        (a, b) =>
+          new Date(a.startDate || a.year) - new Date(b.startDate || b.year)
       );
       if (res.data.session) {
         const idx = allSessions.findIndex((s) => s.id === res.data.session.id);
@@ -150,10 +158,12 @@ const Promotion = () => {
     const fetchClasses = async () => {
       try {
         const res = await axios.get(
-          `https://api.jsic.in/api/classes/${schoolId}`,
+          `http://localhost:5002/api/classes/${schoolId}`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
+              Authorization: `Bearer ${localStorage.getItem(
+                "principal_token"
+              )}`,
             },
           }
         );
@@ -171,7 +181,7 @@ const Promotion = () => {
     if (!schoolId) return;
     try {
       const res = await axios.get(
-        `https://api.jsic.in/api/sessions/studentsessions/by-school/${schoolId}`,
+        `http://localhost:5002/api/sessions/studentsessions/by-school/${schoolId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
@@ -264,7 +274,7 @@ const Promotion = () => {
       // Promote students
       if (promoted.length > 0) {
         await axios.post(
-          "https://api.jsic.in/api/sessions/students/promote",
+          "http://localhost:5002/api/sessions/students/promote",
           {
             fromSessionId: activeSession.id,
             toSessionId: nextSession.id,
@@ -272,7 +282,9 @@ const Promotion = () => {
           },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
+              Authorization: `Bearer ${localStorage.getItem(
+                "principal_token"
+              )}`,
             },
           }
         );
@@ -281,7 +293,7 @@ const Promotion = () => {
       // Drop students
       if (dropped.length > 0) {
         await axios.post(
-          "https://api.jsic.in/api/sessions/students/drop",
+          "http://localhost:5002/api/sessions/students/drop",
           {
             fromSessionId: activeSession.id,
             toSessionId: nextSession.id,
@@ -289,7 +301,9 @@ const Promotion = () => {
           },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("principal_token")}`,
+              Authorization: `Bearer ${localStorage.getItem(
+                "principal_token"
+              )}`,
             },
           }
         );
@@ -308,7 +322,6 @@ const Promotion = () => {
       setTimeout(() => {
         window.location.reload();
       }, 1200);
-
     } catch (err) {
       toast.error("Promotion or Drop failed");
       console.error(err);
@@ -319,7 +332,7 @@ const Promotion = () => {
   const onCreateSession = async (data) => {
     try {
       const res = await axios.post(
-        `https://api.jsic.in/api/sessions/schools/${schoolId}/sessions`,
+        `http://localhost:5002/api/sessions/schools/${schoolId}/sessions`,
         {
           year: data.year,
           startDate: data.startDate,
@@ -344,7 +357,7 @@ const Promotion = () => {
   const handleActivateSession = async (sessionId) => {
     try {
       await axios.patch(
-        `https://api.jsic.in/api/sessions/sessions/${sessionId}`,
+        `http://localhost:5002/api/sessions/sessions/${sessionId}`,
         { isActive: true },
         {
           headers: {
@@ -362,27 +375,34 @@ const Promotion = () => {
   const columns = useMemo(
     () => [
       { Header: "#", accessor: (row, i) => i + 1, id: "row" },
-      { Header: "Student Name", accessor: row => row.student?.studentName || "-" },
-      { Header: "Admission No.", accessor: row => row.student?.Admission_Number || "-" },
-      { Header: "Father Name", accessor: row => row.student?.fatherName || "-" },
+      {
+        Header: "Student Name",
+        accessor: (row) => row.student?.studentName || "-",
+      },
+      {
+        Header: "Admission No.",
+        accessor: (row) => row.student?.Admission_Number || "-",
+      },
+      {
+        Header: "Father Name",
+        accessor: (row) => row.student?.fatherName || "-",
+      },
       { Header: "Status", accessor: "status" },
       {
         Header: "Session Start Date",
-        accessor: row =>
+        accessor: (row) =>
           row.status === "Drop Out"
             ? "-"
             : row.session?.startDate
-              ? new Date(row.session.startDate).toLocaleDateString()
-              : "-"
+            ? new Date(row.session.startDate).toLocaleDateString()
+            : "-",
       },
       {
         Header: "Date",
-        accessor: row =>
-          row.createdAt
-            ? new Date(row.createdAt).toLocaleDateString()
-            : "-"
+        accessor: (row) =>
+          row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "-",
       },
-      { Header: "Remark", accessor: "remarks" }
+      { Header: "Remark", accessor: "remarks" },
     ],
     []
   );
@@ -396,11 +416,7 @@ const Promotion = () => {
     prepareRow,
     setGlobalFilter,
     state,
-  } = useTable(
-    { columns, data },
-    useGlobalFilter,
-    useSortBy
-  );
+  } = useTable({ columns, data }, useGlobalFilter, useSortBy);
 
   const [search, setSearch] = useState("");
 
@@ -411,17 +427,15 @@ const Promotion = () => {
       "Student Name": row.student?.studentName || "-",
       "Admission No.": row.student?.Admission_Number || "-",
       "Father Name": row.student?.fatherName || "-",
-      "Status": row.status,
+      Status: row.status,
       "Session Start Date":
         row.status === "Drop Out"
           ? "-"
           : row.session?.startDate
           ? new Date(row.session.startDate).toLocaleDateString()
           : "-",
-      "Date": row.createdAt
-        ? new Date(row.createdAt).toLocaleDateString()
-        : "-",
-      "Remark": row.remarks || "-"
+      Date: row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "-",
+      Remark: row.remarks || "-",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -441,7 +455,7 @@ const Promotion = () => {
       "Status",
       "Session Start Date",
       "Date",
-      "Remark"
+      "Remark",
     ];
     const tableRows = promotionHistory.map((row, i) => [
       i + 1,
@@ -454,16 +468,14 @@ const Promotion = () => {
         : row.session?.startDate
         ? new Date(row.session.startDate).toLocaleDateString()
         : "-",
-      row.createdAt
-        ? new Date(row.createdAt).toLocaleDateString()
-        : "-",
-      row.remarks || "-"
+      row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "-",
+      row.remarks || "-",
     ]);
     autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
       styles: { fontSize: 8 },
-      headStyles: { fillColor: [41, 128, 185] }
+      headStyles: { fillColor: [41, 128, 185] },
     });
     doc.save("promotion_history.pdf");
   };
@@ -493,16 +505,24 @@ const Promotion = () => {
                   {...register("year", { required: "Year is required" })}
                   placeholder="2026-27"
                 />
-                {errors.year && <p className="text-red-600 text-sm">{errors.year.message}</p>}
+                {errors.year && (
+                  <p className="text-red-600 text-sm">{errors.year.message}</p>
+                )}
               </div>
               <div className="mb-2">
                 <label className="block mb-1">Start Date</label>
                 <input
                   type="date"
                   className="border px-2 py-1 rounded w-full"
-                  {...register("startDate", { required: "Start date is required" })}
+                  {...register("startDate", {
+                    required: "Start date is required",
+                  })}
                 />
-                {errors.startDate && <p className="text-red-600 text-sm">{errors.startDate.message}</p>}
+                {errors.startDate && (
+                  <p className="text-red-600 text-sm">
+                    {errors.startDate.message}
+                  </p>
+                )}
               </div>
               <div className="mb-2">
                 <label className="block mb-1">End Date</label>
@@ -511,10 +531,17 @@ const Promotion = () => {
                   className="border px-2 py-1 rounded w-full"
                   {...register("endDate", { required: "End date is required" })}
                 />
-                {errors.endDate && <p className="text-red-600 text-sm">{errors.endDate.message}</p>}
+                {errors.endDate && (
+                  <p className="text-red-600 text-sm">
+                    {errors.endDate.message}
+                  </p>
+                )}
               </div>
               <div className="flex gap-2 mt-4">
-                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 rounded"
+                >
                   Create
                 </button>
                 <button
@@ -602,8 +629,8 @@ const Promotion = () => {
                     <th className="border px-2 py-1">Transfer Certificate</th>
                     <th className="border px-2 py-1">Status</th>
                     <th className="border px-2 py-1">Action</th> {/* NEW */}
-                    <th className="border px-2 py-1">Promotion Status</th> {/* NEW: Action column for promotion status */}
-                    
+                    <th className="border px-2 py-1">Promotion Status</th>{" "}
+                    {/* NEW: Action column for promotion status */}
                   </tr>
                 </thead>
                 <tbody>
@@ -625,34 +652,56 @@ const Promotion = () => {
                             />
                           </td>
                           <td className="border px-2 py-1">{idx + 1}</td>
-                          <td className="border px-2 py-1">{student.Admission_Number}</td>
-                          <td className="border px-2 py-1">{student.studentName}</td>
-                          <td className="border px-2 py-1">{student.rollNumber}</td>
+                          <td className="border px-2 py-1">
+                            {student.Admission_Number}
+                          </td>
+                          <td className="border px-2 py-1">
+                            {student.studentName}
+                          </td>
+                          <td className="border px-2 py-1">
+                            {student.rollNumber}
+                          </td>
                           <td className="border px-2 py-1">{student.class_}</td>
-                          <td className="border px-2 py-1">{student.sectionclass}</td>
-                          <td className="border px-2 py-1">{student.fatherName}</td>
+                          <td className="border px-2 py-1">
+                            {student.sectionclass}
+                          </td>
+                          <td className="border px-2 py-1">
+                            {student.fatherName}
+                          </td>
                           <td className="border px-2 py-1">{student.phone}</td>
                           <td className="border px-2 py-1">
                             {student.isTransferCertIssued ? (
-                              <span className="text-green-600 font-semibold">Issued</span>
+                              <span className="text-green-600 font-semibold">
+                                Issued
+                              </span>
                             ) : (
                               <span className="text-gray-500">Not Issued</span>
                             )}
                           </td>
-                          <td className="border px-2 py-1">{student.promotionStatus}</td> 
+                          <td className="border px-2 py-1">
+                            {student.promotionStatus}
+                          </td>
                           <td className="border px-2 py-1">
                             {student.isActive ? (
-                              <span className="text-green-600 font-semibold">Active</span>
+                              <span className="text-green-600 font-semibold">
+                                Active
+                              </span>
                             ) : (
-                              <span className="text-red-600 font-semibold">Inactive</span>
+                              <span className="text-red-600 font-semibold">
+                                Inactive
+                              </span>
                             )}
                           </td>
                           {/* NEW: Promotion status dropdown */}
                           <td className="border px-2 py-1">
                             {selected.includes(student.id) && (
                               <select
-                                value={promotionStatus[student.id] || "Promoted"}
-                                onChange={(e) => handleStatusChange(student.id, e.target.value)}
+                                value={
+                                  promotionStatus[student.id] || "Promoted"
+                                }
+                                onChange={(e) =>
+                                  handleStatusChange(student.id, e.target.value)
+                                }
                                 className="border px-1 py-0.5 rounded"
                               >
                                 <option value="Promoted">Promoted</option>
@@ -671,21 +720,16 @@ const Promotion = () => {
           {/* Show session info error if not loaded */}
           {(!activeSession || !nextSession) && (
             <div className="text-red-600 mb-2">
-              { !activeSession
+              {!activeSession
                 ? "Active session not found. Please contact admin."
-                : "Next session not found. Please create the next session in the system before promoting students."
-              }
+                : "Next session not found. Please create the next session in the system before promoting students."}
             </div>
           )}
           <div className="flex gap-4 mb-4">
             <button
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
               onClick={handlePromote}
-              disabled={
-                selected.length === 0 ||
-                !activeSession ||
-                !nextSession
-              }
+              disabled={selected.length === 0 || !activeSession || !nextSession}
             >
               Promote Selected Students
             </button>
@@ -696,7 +740,9 @@ const Promotion = () => {
                 setShowHistory((prev) => !prev);
               }}
             >
-              {showHistory ? "Hide Promotion History" : "Show Promotion History"}
+              {showHistory
+                ? "Hide Promotion History"
+                : "Show Promotion History"}
             </button>
           </div>
 
@@ -722,19 +768,27 @@ const Promotion = () => {
                 className="mb-2 border px-2 py-1 rounded w-full max-w-xs"
                 placeholder="Search..."
                 value={search}
-                onChange={e => {
+                onChange={(e) => {
                   setSearch(e.target.value);
                   setGlobalFilter(e.target.value);
                 }}
               />
               <div className="overflow-x-auto">
-                <table {...getTableProps()} className="min-w-full border text-sm">
+                <table
+                  {...getTableProps()}
+                  className="min-w-full border text-sm"
+                >
                   <thead>
-                    {headerGroups.map(headerGroup => (
-                      <tr {...headerGroup.getHeaderGroupProps()} className="bg-gray-100">
-                        {headerGroup.headers.map(column => (
+                    {headerGroups.map((headerGroup) => (
+                      <tr
+                        {...headerGroup.getHeaderGroupProps()}
+                        className="bg-gray-100"
+                      >
+                        {headerGroup.headers.map((column) => (
                           <th
-                            {...column.getHeaderProps(column.getSortByToggleProps())}
+                            {...column.getHeaderProps(
+                              column.getSortByToggleProps()
+                            )}
                             className="border px-2 py-1 cursor-pointer"
                           >
                             {column.render("Header")}
@@ -753,17 +807,23 @@ const Promotion = () => {
                   <tbody {...getTableBodyProps()}>
                     {rows.length === 0 ? (
                       <tr>
-                        <td colSpan={columns.length} className="text-center py-2">
+                        <td
+                          colSpan={columns.length}
+                          className="text-center py-2"
+                        >
                           No records found.
                         </td>
                       </tr>
                     ) : (
-                      rows.map(row => {
+                      rows.map((row) => {
                         prepareRow(row);
                         return (
                           <tr {...row.getRowProps()}>
-                            {row.cells.map(cell => (
-                              <td className="border px-2 py-1" {...cell.getCellProps()}>
+                            {row.cells.map((cell) => (
+                              <td
+                                className="border px-2 py-1"
+                                {...cell.getCellProps()}
+                              >
                                 {cell.render("Cell")}
                               </td>
                             ))}
@@ -779,16 +839,34 @@ const Promotion = () => {
         </>
       )}
       {reloading && (
-  <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-    <div className="flex flex-col items-center">
-      <svg className="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-      </svg>
-      <span className="mt-2 text-blue-700 font-semibold">Reloading...</span>
-    </div>
-  </div>
-)}
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="flex flex-col items-center">
+            <svg
+              className="animate-spin h-10 w-10 text-blue-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8z"
+              ></path>
+            </svg>
+            <span className="mt-2 text-blue-700 font-semibold">
+              Reloading...
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

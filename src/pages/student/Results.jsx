@@ -19,7 +19,7 @@ const Results = () => {
   const [studentDetails, setStudentDetails] = useState(null); // State for student details
   const resultRef = useRef(null);
 
-  const BASE_URL = "https://api.jsic.in"; // Base URL
+  const BASE_URL = "http://localhost:5002"; // Base URL
 
   // Set schoolId and studentId from localStorage
   useEffect(() => {
@@ -43,14 +43,17 @@ const Results = () => {
         }
 
         const token = localStorage.getItem("student_token");
-        const response = await axios.get(`${BASE_URL}/api/admission/students/${studentId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params: {
-            schoolId,
-          },
-        });
+        const response = await axios.get(
+          `${BASE_URL}/api/admission/students/${studentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params: {
+              schoolId,
+            },
+          }
+        );
         const studentData = response.data.student;
 
         setIsResultPublished(studentData.isResultPublished); // Set the result published status
@@ -133,28 +136,28 @@ const Results = () => {
 
   const downloadPDF = async () => {
     const element = resultRef.current;
-  
+
     // Use html2canvas to capture the element
     const canvas = await html2canvas(element, {
       scale: 3, // Increase scale for better quality
       useCORS: true, // Allow cross-origin images
     });
-  
+
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("p", "mm", "a4"); // A4 size in portrait mode
-  
+
     const pdfWidth = pdf.internal.pageSize.getWidth(); // A4 width
     const pdfHeight = pdf.internal.pageSize.getHeight(); // A4 height
-  
+
     const imgWidth = pdfWidth - 20; // Leave 10mm margin on both sides
     const imgHeight = (canvas.height * imgWidth) / canvas.width; // Maintain aspect ratio
-  
+
     let position = 10; // Start position with a top margin of 10mm
-  
+
     // If the content height exceeds one page, split into multiple pages
     if (imgHeight > pdfHeight - 20) {
       let remainingHeight = imgHeight;
-  
+
       while (remainingHeight > 0) {
         pdf.addImage(
           imgData,
@@ -164,10 +167,10 @@ const Results = () => {
           imgWidth,
           Math.min(remainingHeight, pdfHeight - 20) // Adjust height for margins
         );
-  
+
         remainingHeight -= pdfHeight - 20;
         position = 10;
-  
+
         if (remainingHeight > 0) {
           pdf.addPage(); // Add a new page for remaining content
         }
@@ -175,12 +178,14 @@ const Results = () => {
     } else {
       pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
     }
-  
+
     pdf.save("result.pdf");
   };
 
   if (loading) {
-    return <div className="text-center py-6">Results are not published yet....</div>;
+    return (
+      <div className="text-center py-6">Results are not published yet....</div>
+    );
   }
 
   if (error) {
@@ -200,7 +205,9 @@ const Results = () => {
       <div ref={resultRef} className="bg-white p-6 rounded-lg shadow-sm">
         {/* Custom Header */}
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">{Schooolname || "School Name"}</h1>
+          <h1 className="text-3xl font-bold text-gray-800">
+            {Schooolname || "School Name"}
+          </h1>
         </div>
 
         {/* Student Details */}
@@ -208,7 +215,9 @@ const Results = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div>
               <p className="text-sm text-gray-600">Student Name</p>
-              <p className="font-semibold text-gray-800">{studentDetails.studentName}</p>
+              <p className="font-semibold text-gray-800">
+                {studentDetails.studentName}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Date of Birth</p>
@@ -218,23 +227,33 @@ const Results = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Father's Name</p>
-              <p className="font-semibold text-gray-800">{studentDetails.fatherName}</p>
+              <p className="font-semibold text-gray-800">
+                {studentDetails.fatherName}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Mother's Name</p>
-              <p className="font-semibold text-gray-800">{studentDetails.motherName}</p>
+              <p className="font-semibold text-gray-800">
+                {studentDetails.motherName}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Class</p>
-              <p className="font-semibold text-gray-800">{studentDetails.class_}</p>
+              <p className="font-semibold text-gray-800">
+                {studentDetails.class_}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Section</p>
-              <p className="font-semibold text-gray-800">{studentDetails.sectionclass}</p>
+              <p className="font-semibold text-gray-800">
+                {studentDetails.sectionclass}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Admission Number</p>
-              <p className="font-semibold text-gray-800">{studentDetails.Admission_Number}</p>
+              <p className="font-semibold text-gray-800">
+                {studentDetails.Admission_Number}
+              </p>
             </div>
           </div>
         )}
@@ -262,12 +281,18 @@ const Results = () => {
               {filteredResults.length > 0 ? (
                 filteredResults.map((subject, index) => (
                   <tr key={index}>
-                    <td className="px-4 py-3 text-sm text-gray-800">{subject.subject}</td>
-                    <td className="px-4 py-3 text-sm text-gray-800">{subject.marks}</td>
+                    <td className="px-4 py-3 text-sm text-gray-800">
+                      {subject.subject}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-800">
+                      {subject.marks}
+                    </td>
                     <td className="px-4 py-3 text-sm font-medium text-blue-600">
                       {subject.grade}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{subject.remarks}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {subject.remarks}
+                    </td>
                   </tr>
                 ))
               ) : (

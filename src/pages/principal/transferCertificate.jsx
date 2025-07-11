@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Search, ArrowDownToLine, FilePlus2, RotateCcw, Printer } from "lucide-react";
+import {
+  Search,
+  ArrowDownToLine,
+  FilePlus2,
+  RotateCcw,
+  Printer,
+} from "lucide-react";
 import axios from "axios";
-import { useReactToPrint } from 'react-to-print';
+import { useReactToPrint } from "react-to-print";
 import html2pdf from "html2pdf.js";
 import { getImageUrl } from "../../utils/getImageUrl";
 
@@ -16,25 +22,26 @@ const TransferCertificate = () => {
   const [editableFields, setEditableFields] = useState({});
   const [schoolLogo, setSchoolLogo] = useState(null);
   const [principalSignature, setPrincipalSignature] = useState(null);
-  const [principalSignatureBase64, setPrincipalSignatureBase64] = useState(null);
+  const [principalSignatureBase64, setPrincipalSignatureBase64] =
+    useState(null);
   const [schoolLogoBase64, setSchoolLogoBase64] = useState(null);
   const [schoolNameFromUser, setSchoolNameFromUser] = useState("");
   const [tcNo, setTcNo] = useState("");
   const [tcConduct, setTcConduct] = useState("");
   const [tcRemarks, setTcRemarks] = useState("");
   const [schoolDetails, setSchoolDetails] = useState({
-    Schoolname: '',
-    address: '',
-    medium: '',
-    phone: '',
-    establishmentYear: '',
-    affiliationStatus: '',
-    schoolAffiliationNumber: '',
-    schoolCode: '',
-    email: '',
-    website: ''
+    Schoolname: "",
+    address: "",
+    medium: "",
+    phone: "",
+    establishmentYear: "",
+    affiliationStatus: "",
+    schoolAffiliationNumber: "",
+    schoolCode: "",
+    email: "",
+    website: "",
   });
- 
+
   const printRef = useRef();
 
   const characterOptions = ["GOOD", "VERY GOOD", "EXCELLENT", "SATISFACTORY"];
@@ -51,9 +58,14 @@ const TransferCertificate = () => {
         .set({
           margin: 0,
           filename: `TransferCertificate_${selectedStudent.studentName}.pdf`,
-          html2canvas: { scale: 2, useCORS: true, logging: true, windowWidth: 794 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            logging: true,
+            windowWidth: 794,
+          },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-          pagebreak: { mode: ['avoid-all'] }
+          pagebreak: { mode: ["avoid-all"] },
         })
         .from(printRef.current)
         .save();
@@ -66,13 +78,17 @@ const TransferCertificate = () => {
     const schools = user?.user?.schools || user?.schools || [];
     const schoolId = schools[0]?.id || null;
     setSchoolId(schoolId);
-    setSchoolNameFromUser(schools[0]?.Schoolname || schools[0]?.schoolName || "");
+    setSchoolNameFromUser(
+      schools[0]?.Schoolname || schools[0]?.schoolName || ""
+    );
 
     if (!schoolId) return;
     // Fetch logo
     const fetchLogo = async () => {
       try {
-        const res = await fetch(`https://api.jsic.in/api/newSchool/school-assets/by-school/${schoolId}`);
+        const res = await fetch(
+          `http://localhost:5002/api/newSchool/school-assets/by-school/${schoolId}`
+        );
         const data = await res.json();
         setSchoolLogo(data.schoolLogo || null);
         setPrincipalSignature(data.principalSignature || null);
@@ -115,18 +131,18 @@ const TransferCertificate = () => {
   useEffect(() => {
     const fetchSchoolDetails = async () => {
       if (!schoolId) return;
-      
+
       try {
         const principal_token = localStorage.getItem("principal_token");
         const response = await axios.get(
-          `https://api.jsic.in/api/newSchool/schools/${schoolId}`,
+          `http://localhost:5002/api/newSchool/schools/${schoolId}`,
           {
             headers: {
               Authorization: `Bearer ${principal_token}`,
-            }
+            },
           }
         );
-        
+
         setSchoolDetails({
           Schoolname: response.data.Schoolname,
           address: response.data.address,
@@ -135,13 +151,13 @@ const TransferCertificate = () => {
           establishmentYear: response.data.establishmentYear,
           affiliationStatus: response.data.affiliationStatus,
           schoolAffiliationNumber: response.data.schoolAffiliationNumber,
-          schoolCode: response.data.schoolCode
+          schoolCode: response.data.schoolCode,
         });
       } catch (err) {
         console.error("Error fetching school details:", err);
       }
     };
-  
+
     fetchSchoolDetails();
   }, [schoolId]);
 
@@ -151,7 +167,7 @@ const TransferCertificate = () => {
       try {
         const principal_token = localStorage.getItem("principal_token");
         const response = await axios.get(
-          `https://api.jsic.in/api/admission/students/by-school/${schoolId}`,
+          `http://localhost:5002/api/admission/students/by-school/${schoolId}`,
           {
             headers: {
               Authorization: `Bearer ${principal_token}`,
@@ -174,7 +190,7 @@ const TransferCertificate = () => {
       try {
         const principal_token = localStorage.getItem("principal_token");
         const res = await axios.get(
-          `https://api.jsic.in/api/transferCertificate/schools/${schoolId}/students/${selectedStudent.id}/transfer-certificates`,
+          `http://localhost:5002/api/transferCertificate/schools/${schoolId}/students/${selectedStudent.id}/transfer-certificates`,
           {
             headers: {
               Authorization: `Bearer ${principal_token}`,
@@ -206,7 +222,9 @@ const TransferCertificate = () => {
     () =>
       admissions.filter(
         (student) =>
-          student.studentName?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          student.studentName
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) &&
           (classFilter ? student.class_ === classFilter : true)
       ),
     [admissions, searchQuery, classFilter]
@@ -220,13 +238,14 @@ const TransferCertificate = () => {
 
       // Use editable fields for dynamic values if present
       const fields = editableFields[student.id] || {};
-      const leftDate = fields.leftDate || new Date().toISOString().split("T")[0];
+      const leftDate =
+        fields.leftDate || new Date().toISOString().split("T")[0];
       const character = fields.character || "GOOD";
       const nationality = fields.nationality || "INDIAN";
       const religion = fields.religion || "HINDU";
 
       const res = await axios.post(
-        `https://api.jsic.in/api/transferCertificate/students/${student.id}/transfer-certificate`,
+        `http://localhost:5002/api/transferCertificate/students/${student.id}/transfer-certificate`,
         {
           reason,
           remarks,
@@ -259,7 +278,7 @@ const TransferCertificate = () => {
       const principal_token = localStorage.getItem("principal_token");
       // Use schoolId from state (already set in useEffect)
       const res = await axios.get(
-        `https://api.jsic.in/api/transferCertificate/schools/${schoolId}/students/${studentId}/transfer-certificates`,
+        `http://localhost:5002/api/transferCertificate/schools/${schoolId}/students/${studentId}/transfer-certificates`,
         {
           headers: {
             Authorization: `Bearer ${principal_token}`,
@@ -278,7 +297,7 @@ const TransferCertificate = () => {
     try {
       const principal_token = localStorage.getItem("principal_token");
       const res = await axios.post(
-        `https://api.jsic.in/api/transferCertificate/students/${student.id}/transfer-certificate/rollback`,
+        `http://localhost:5002/api/transferCertificate/students/${student.id}/transfer-certificate/rollback`,
         {},
         {
           headers: {
@@ -291,7 +310,9 @@ const TransferCertificate = () => {
         // Update UI: set isTransferCertIssued to false for this student
         setAdmissions((prev) =>
           prev.map((s) =>
-            s.id === student.id ? { ...s, isTransferCertIssued: false, isActive: true } : s
+            s.id === student.id
+              ? { ...s, isTransferCertIssued: false, isActive: true }
+              : s
           )
         );
       } else {
@@ -350,7 +371,10 @@ const TransferCertificate = () => {
             </select>
           </div>
 
-          <div className="overflow-auto rounded shadow mt-4" style={{ maxHeight: "400px" }}>
+          <div
+            className="overflow-auto rounded shadow mt-4"
+            style={{ maxHeight: "400px" }}
+          >
             <table className="min-w-full border text-sm" id="tc-students-table">
               <thead className="bg-gray-100 sticky top-0 z-10">
                 <tr>
@@ -380,10 +404,16 @@ const TransferCertificate = () => {
                   filteredAdmissions.map((student, idx) => (
                     <tr
                       key={student.id}
-                      className={idx % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-blue-50 transition"}
+                      className={
+                        idx % 2 === 0
+                          ? "bg-white"
+                          : "bg-gray-50 hover:bg-blue-50 transition"
+                      }
                     >
                       <td className="border px-2 py-1">{idx + 1}</td>
-                      <td className="border px-2 py-1 font-semibold">{student.studentName}</td>
+                      <td className="border px-2 py-1 font-semibold">
+                        {student.studentName}
+                      </td>
                       <td className="border px-2 py-1">{student.fatherName}</td>
                       <td className="border px-2 py-1">{student.motherName}</td>
                       <td className="border px-2 py-1">{student.class_}</td>
@@ -395,47 +425,87 @@ const TransferCertificate = () => {
                             editableFields[student.id]?.leftDate ||
                             new Date().toISOString().split("T")[0]
                           }
-                          onChange={(e) => handleFieldChange(student.id, "leftDate", e.target.value)}
+                          onChange={(e) =>
+                            handleFieldChange(
+                              student.id,
+                              "leftDate",
+                              e.target.value
+                            )
+                          }
                           className="border rounded px-1 py-0.5 text-xs"
                         />
                       </td>
                       <td className="border px-2 py-1">
                         <select
-                          value={editableFields[student.id]?.character || "GOOD"}
-                          onChange={(e) => handleFieldChange(student.id, "character", e.target.value)}
+                          value={
+                            editableFields[student.id]?.character || "GOOD"
+                          }
+                          onChange={(e) =>
+                            handleFieldChange(
+                              student.id,
+                              "character",
+                              e.target.value
+                            )
+                          }
                           className="border rounded px-1 py-0.5 text-xs"
                         >
                           {characterOptions.map((opt) => (
-                            <option key={opt} value={opt}>{opt}</option>
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
                           ))}
                         </select>
                       </td>
                       <td className="border px-2 py-1">
                         <select
-                          value={editableFields[student.id]?.nationality || "INDIAN"}
-                          onChange={(e) => handleFieldChange(student.id, "nationality", e.target.value)}
+                          value={
+                            editableFields[student.id]?.nationality || "INDIAN"
+                          }
+                          onChange={(e) =>
+                            handleFieldChange(
+                              student.id,
+                              "nationality",
+                              e.target.value
+                            )
+                          }
                           className="border rounded px-1 py-0.5 text-xs"
                         >
                           {nationalityOptions.map((opt) => (
-                            <option key={opt} value={opt}>{opt}</option>
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
                           ))}
                         </select>
                       </td>
                       <td className="border px-2 py-1">
                         <select
-                          value={editableFields[student.id]?.religion || "HINDU"}
-                          onChange={(e) => handleFieldChange(student.id, "religion", e.target.value)}
+                          value={
+                            editableFields[student.id]?.religion || "HINDU"
+                          }
+                          onChange={(e) =>
+                            handleFieldChange(
+                              student.id,
+                              "religion",
+                              e.target.value
+                            )
+                          }
                           className="border rounded px-1 py-0.5 text-xs"
                         >
                           {religionOptions.map((opt) => (
-                            <option key={opt} value={opt}>{opt}</option>
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
                           ))}
                         </select>
                       </td>
-                      <td className="border px-2 py-1">{new Date(student.dateOfBirth).toLocaleDateString()}</td>
+                      <td className="border px-2 py-1">
+                        {new Date(student.dateOfBirth).toLocaleDateString()}
+                      </td>
                       <td className="border px-2 py-1">
                         {student.isTransferCertIssued ? (
-                          <span className="text-green-600 font-semibold">Issued</span>
+                          <span className="text-green-600 font-semibold">
+                            Issued
+                          </span>
                         ) : (
                           <span className="text-gray-500">Not Issued</span>
                         )}
@@ -493,7 +563,7 @@ const TransferCertificate = () => {
                     border: "2px solid #000",
                     boxSizing: "border-box",
                     overflow: "hidden",
-                    padding: "24px" // adjust as needed, but don't exceed height
+                    padding: "24px", // adjust as needed, but don't exceed height
                   }}
                 >
                   {/* Header */}
@@ -503,11 +573,11 @@ const TransferCertificate = () => {
                         src={getImageUrl(schoolLogo) || "/school-logo.png"}
                         alt="School Logo"
                         className="w-20 h-20 mr-4"
-                        style={{ 
+                        style={{
                           objectFit: "contain",
                           backgroundColor: "white",
                           padding: "2px",
-                          borderRadius: "4px"
+                          borderRadius: "4px",
                         }}
                         onError={(e) => {
                           e.target.onerror = null;
@@ -516,22 +586,28 @@ const TransferCertificate = () => {
                       />
                       <div className="flex-1">
                         <h1 className="text-3xl font-bold text-indigo-900">
-                          {schoolDetails.Schoolname || schoolNameFromUser || "School Name"}
+                          {schoolDetails.Schoolname ||
+                            schoolNameFromUser ||
+                            "School Name"}
                         </h1>
                         <h2 className="text-xl font-bold text-indigo-800">
                           {schoolDetails.medium || ""} MEDIUM
                         </h2>
                         <p className="text-sm text-indigo-800">
-                          {schoolDetails.affiliationStatus 
+                          {schoolDetails.affiliationStatus
                             ? `Affiliated to ${schoolDetails.affiliationStatus} Board`
                             : ""}
                         </p>
                         <p className="text-sm">{schoolDetails.address}</p>
                         {schoolDetails.phone && (
-                          <p className="text-sm">Phone: {schoolDetails.phone}</p>
+                          <p className="text-sm">
+                            Phone: {schoolDetails.phone}
+                          </p>
                         )}
                         {schoolDetails.establishmentYear && (
-                          <p className="text-sm">Est. {schoolDetails.establishmentYear}</p>
+                          <p className="text-sm">
+                            Est. {schoolDetails.establishmentYear}
+                          </p>
                         )}
                         <div className="flex justify-between text-sm mt-1">
                           <span>Email: {schoolDetails.email || ""}</span>
@@ -539,7 +615,8 @@ const TransferCertificate = () => {
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-pink-600 font-bold">
-                            Affiliation No: {schoolDetails.schoolAffiliationNumber || ""}
+                            Affiliation No:{" "}
+                            {schoolDetails.schoolAffiliationNumber || ""}
                           </span>
                           <span className="text-pink-600 font-bold">
                             School Code: {schoolDetails.schoolCode || ""}
@@ -552,90 +629,193 @@ const TransferCertificate = () => {
                   {/* Title */}
                   <div className="text-center my-6">
                     <div className="inline-block border-2 border-black px-8 py-2">
-                      <h2 className="text-2xl font-bold">TRANSFER CERTIFICATE</h2>
+                      <h2 className="text-2xl font-bold">
+                        TRANSFER CERTIFICATE
+                      </h2>
                     </div>
                   </div>
 
                   {/* Reference Numbers */}
                   <div className="flex justify-between mb-6">
-                    <div><strong>Ref.No.</strong> {tcNo || "__________"}</div>
-                    
-                    <div><strong>Admn. No:</strong> {selectedStudent.Admission_Number || "__________"}</div>
+                    <div>
+                      <strong>Ref.No.</strong> {tcNo || "__________"}
+                    </div>
+
+                    <div>
+                      <strong>Admn. No:</strong>{" "}
+                      {selectedStudent.Admission_Number || "__________"}
+                    </div>
                   </div>
 
                   {/* Certificate Content */}
                   <div className="grid grid-cols-1 gap-2">
                     <div className="flex">
                       <div className="w-2/3">1. Name of Pupil</div>
-                      <div className="w-1/3">: <span className="font-bold">{selectedStudent.studentName}</span></div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {selectedStudent.studentName}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
                       <div className="w-2/3">2. Name of Father / Guardian</div>
-                      <div className="w-1/3">: <span className="font-bold">{selectedStudent.fatherName}</span></div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {selectedStudent.fatherName}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
                       <div className="w-2/3">3. Gender</div>
-                      <div className="w-1/3">: <span className="font-bold">{selectedStudent.gender}</span></div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {selectedStudent.gender}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
                       <div className="w-2/3">4. Nationality</div>
-                      <div className="w-1/3">: <span className="font-bold">{selectedStudent.nationality || "Indian"}</span></div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {selectedStudent.nationality || "Indian"}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
                       <div className="w-2/3">5. Religion & Caste</div>
-                      <div className="w-1/3">: <span className="font-bold">{selectedStudent.religion} {selectedStudent.caste}</span></div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {selectedStudent.religion} {selectedStudent.caste}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
-                      <div className="w-2/3">7. Date of Birth according to Admission Register (In figures and words)</div>
-                      <div className="w-1/3">: <span className="font-bold">{new Date(selectedStudent.dateOfBirth).toLocaleDateString()}</span></div>
+                      <div className="w-2/3">
+                        7. Date of Birth according to Admission Register (In
+                        figures and words)
+                      </div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {new Date(
+                            selectedStudent.dateOfBirth
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
-                      <div className="w-2/3">8. Class in which the pupil last studied</div>
-                      <div className="w-1/3">: <span className="font-bold">{selectedStudent.class_}</span></div>
+                      <div className="w-2/3">
+                        8. Class in which the pupil last studied
+                      </div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {selectedStudent.class_}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
-                      <div className="w-2/3">10. Whether the candidate has passed the Craft Subject, Core subject / work experience / Health and Physical Education</div>
-                      <div className="w-1/3">: <span className="font-bold">{selectedStudent.passedCraft || "Certified"}</span></div>
+                      <div className="w-2/3">
+                        10. Whether the candidate has passed the Craft Subject,
+                        Core subject / work experience / Health and Physical
+                        Education
+                      </div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {selectedStudent.passedCraft || "Certified"}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
-                      <div className="w-2/3">18. Date of issue of Transfer Certificate</div>
-                      <div className="w-1/3">: <span className="font-bold">{new Date().toLocaleDateString()}</span></div>
+                      <div className="w-2/3">
+                        18. Date of issue of Transfer Certificate
+                      </div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {new Date().toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
-                      <div className="w-2/3">19. Reason for leaving the school</div>
-                      <div className="w-1/3">: <span className="font-bold">{selectedStudent.reasonForLeaving}</span></div>
+                      <div className="w-2/3">
+                        19. Reason for leaving the school
+                      </div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {selectedStudent.reasonForLeaving}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
-                      <div className="w-2/3">20. Number of school days up to date</div>
-                      <div className="w-1/3">: <span className="font-bold">{selectedStudent.schoolDaysUpToDate}</span></div>
+                      <div className="w-2/3">
+                        20. Number of school days up to date
+                      </div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {selectedStudent.schoolDaysUpToDate}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
-                      <div className="w-2/3">21. Number of school days the pupil attended</div>
-                      <div className="w-1/3">: <span className="font-bold">{selectedStudent.schoolDaysAttended}</span></div>
+                      <div className="w-2/3">
+                        21. Number of school days the pupil attended
+                      </div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {selectedStudent.schoolDaysAttended}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
                       <div className="w-2/3">22. General Conduct</div>
-                      <div className="w-1/3">: <span className="font-bold">{tcConduct || selectedStudent.conduct}</span></div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {tcConduct || selectedStudent.conduct}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex">
                       <div className="w-2/3">23. Any other Remarks</div>
-                      <div className="w-1/3">: <span className="font-bold">{tcRemarks || selectedStudent.remarks}</span></div>
+                      <div className="w-1/3">
+                        :{" "}
+                        <span className="font-bold">
+                          {tcRemarks || selectedStudent.remarks}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Footer */}
                   <div className="flex justify-between mt-12 mb-6 pt-6">
                     <div>
-                      <p><strong>CLASS TEACHER</strong></p>
+                      <p>
+                        <strong>CLASS TEACHER</strong>
+                      </p>
                       <div className="h-16"></div>
                     </div>
                     <div>
-                      <p><strong>VERIFIED BY</strong></p>
+                      <p>
+                        <strong>VERIFIED BY</strong>
+                      </p>
                       <div className="h-16"></div>
                     </div>
                     <div>
                       {principalSignature && (
-                        <img src={getImageUrl(principalSignature)} alt="Principal Signature" crossOrigin="anonymous" 
+                        <img
+                          src={getImageUrl(principalSignature)}
+                          alt="Principal Signature"
+                          crossOrigin="anonymous"
                           className="h-8 mb-2 mx-auto flex-shrink-0 align-middle"
                         />
                       )}
@@ -651,13 +831,15 @@ const TransferCertificate = () => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      opacity: 0.10,
+                      opacity: 0.1,
                       pointerEvents: "none",
                       zIndex: 0,
-                      transform: "rotate(-45deg)"
+                      transform: "rotate(-45deg)",
                     }}
                   >
-                    <p className="text-6xl font-bold text-gray-500 select-none">True Copy</p>
+                    <p className="text-6xl font-bold text-gray-500 select-none">
+                      True Copy
+                    </p>
                   </div>
                 </div>
               </div>
@@ -684,4 +866,3 @@ const TransferCertificate = () => {
 };
 
 export default TransferCertificate;
-

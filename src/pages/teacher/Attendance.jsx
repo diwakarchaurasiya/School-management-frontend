@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { CheckCircle, XCircle, Calendar, Clock, Search } from "lucide-react";
 import AttendanceSkeleton from "../../Loading/AttendanceLoading";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 
 const Attendance = () => {
   // Get teacher data and tokens from localStorage
@@ -19,12 +19,16 @@ const Attendance = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [attendance, setAttendance] = useState({});
-  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [endDate, setEndDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [attendanceHistory, setAttendanceHistory] = useState([]);
-  const [viewMode, setViewMode] = useState('daily'); // 'daily' or 'history'
+  const [viewMode, setViewMode] = useState("daily"); // 'daily' or 'history'
 
-  const API_BASE_URL = 'https://api.jsic.in/api';
+  const API_BASE_URL = "http://localhost:5002/api";
 
   // Fetch students and attendance data
   useEffect(() => {
@@ -42,11 +46,11 @@ const Attendance = () => {
             params: {
               date: new Date(date).toISOString(),
               classId,
-              schoolId
+              schoolId,
             },
             headers: {
-              Authorization: `Bearer ${token}`
-            }
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
 
@@ -63,8 +67,8 @@ const Attendance = () => {
           `${API_BASE_URL}/admission/students/by-school/${schoolId}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`
-            }
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
 
@@ -100,11 +104,11 @@ const Attendance = () => {
             classId, // Send as query param instead of URL param
             startDate: new Date(startDate).toISOString(),
             endDate: new Date(endDate).toISOString(),
-            schoolId: String(schoolId)
+            schoolId: String(schoolId),
           },
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -114,13 +118,16 @@ const Attendance = () => {
         console.error("Failed to fetch attendance history:", data.message);
       }
     } catch (error) {
-      console.error("Error fetching attendance history:", error.response?.data || error.message);
+      console.error(
+        "Error fetching attendance history:",
+        error.response?.data || error.message
+      );
       alert("Failed to fetch attendance history. Please try again.");
     }
   };
 
   useEffect(() => {
-    if (viewMode === 'history') {
+    if (viewMode === "history") {
       fetchAttendanceHistory();
     }
   }, [viewMode]);
@@ -130,7 +137,7 @@ const Attendance = () => {
       alert("Please select both start and end dates");
       return;
     }
-    
+
     if (new Date(endDate) < new Date(startDate)) {
       alert("End date cannot be before start date");
       return;
@@ -155,8 +162,8 @@ const Attendance = () => {
       teacherId,
       attendance: Object.entries(attendance).map(([studentId, status]) => ({
         studentId,
-        status
-      }))
+        status,
+      })),
     };
 
     try {
@@ -165,8 +172,8 @@ const Attendance = () => {
         attendanceData,
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -189,11 +196,11 @@ const Attendance = () => {
   if (loading) return <AttendanceSkeleton />;
 
   // Filtered students based on teacher's classId and search
-  const filteredStudents = students
-    .filter((student) =>
+  const filteredStudents = students.filter(
+    (student) =>
       student.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.idcardNumber.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  );
 
   console.log("Local storage classId:", classId);
   console.log("Filtered students:", filteredStudents);
@@ -210,21 +217,21 @@ const Attendance = () => {
         <div className="flex items-center gap-4">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => setViewMode('daily')}
+              onClick={() => setViewMode("daily")}
               className={`px-4 py-2 rounded-md ${
-                viewMode === 'daily' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-600'
+                viewMode === "daily"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-600"
               }`}
             >
               Daily Attendance
             </button>
             <button
-              onClick={() => setViewMode('history')}
+              onClick={() => setViewMode("history")}
               className={`px-4 py-2 rounded-md ${
-                viewMode === 'history' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-600'
+                viewMode === "history"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-600"
               }`}
             >
               Attendance History
@@ -233,7 +240,7 @@ const Attendance = () => {
         </div>
       </div>
 
-      {viewMode === 'daily' ? (
+      {viewMode === "daily" ? (
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-4 border-b">
             <div className="flex items-center gap-2">
@@ -337,7 +344,9 @@ const Attendance = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Start Date</label>
+                  <label className="block text-sm text-gray-600 mb-1">
+                    Start Date
+                  </label>
                   <input
                     type="date"
                     value={startDate}
@@ -346,7 +355,9 @@ const Attendance = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">End Date</label>
+                  <label className="block text-sm text-gray-600 mb-1">
+                    End Date
+                  </label>
                   <input
                     type="date"
                     value={endDate}
@@ -379,23 +390,38 @@ const Attendance = () => {
             <table className="w-full">
               <thead className="bg-gray-50 sticky top-0">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Date</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">ID Card No</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Student Name</th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-600">Status</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Marked By</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                    Date
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                    ID Card No
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                    Student Name
+                  </th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-600">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                    Marked By
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {attendanceHistory
-                  .filter(record => 
-                    record.student.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    record.student.idcardNumber.toLowerCase().includes(searchTerm.toLowerCase())
+                  .filter(
+                    (record) =>
+                      record.student.studentName
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                      record.student.idcardNumber
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase())
                   )
                   .map((record) => (
                     <tr key={record.id}>
                       <td className="px-4 py-3 text-sm text-gray-800">
-                        {format(new Date(record.date), 'dd/MM/yyyy')}
+                        {format(new Date(record.date), "dd/MM/yyyy")}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-800">
                         {record.student.idcardNumber}
@@ -405,12 +431,14 @@ const Attendance = () => {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-center">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            record.status === 'present' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {record.status === 'present' ? 'Present' : 'Absent'}
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs ${
+                              record.status === "present"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {record.status === "present" ? "Present" : "Absent"}
                           </span>
                         </div>
                       </td>
